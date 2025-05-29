@@ -931,7 +931,7 @@
       <div class="login-content">
         <p class="login-text">Login for quick medicine delivery</p>
         
-        <form id="loginForm" class="login-form">
+        <form id="loginForm" class="login-form" autocomplete="off" aria-label="Login form">
           <div class="input-group">
             <i class="material-icons">person</i>
             <input 
@@ -939,6 +939,8 @@
               id="nameInput" 
               placeholder="Enter your name" 
               required 
+              aria-label="Name"
+              autocomplete="name"
             />
           </div>
           <div class="input-group">
@@ -950,41 +952,47 @@
               pattern="[0-9]{10}" 
               maxlength="10"
               required 
+              aria-label="Mobile number"
+              autocomplete="tel"
+              inputmode="numeric"
             />
           </div>
-          <button type="submit" class="primary-button">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+            <input type="checkbox" id="rememberMe" aria-label="Remember Me" style="width: 18px; height: 18px; accent-color: var(--primary);" />
+            <label for="rememberMe" style="font-size: 15px; color: var(--text-light); cursor: pointer;">Remember Me</label>
+          </div>
+          <button type="submit" class="primary-button" aria-label="Get OTP">
             <span>Get OTP</span>
             <i class="material-icons">arrow_forward</i>
           </button>
         </form>
 
-        <div id="errorMessage" class="error-message"></div>
+        <div id="errorMessage" class="error-message" aria-live="assertive" role="alert"></div>
 
-        <div id="otpContainer" class="otp-container" style="display: none;">
+        <div id="otpContainer" class="otp-container" style="display: none;" aria-live="polite">
           <p>Enter the OTP sent to your phone</p>
-          <div class="otp-input">
-            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required />
-            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required />
-            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required />
-            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required />
+          <div class="otp-input" role="group" aria-label="OTP input">
+            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required aria-label="OTP digit 1" autocomplete="one-time-code" />
+            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required aria-label="OTP digit 2" autocomplete="one-time-code" />
+            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required aria-label="OTP digit 3" autocomplete="one-time-code" />
+            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required aria-label="OTP digit 4" autocomplete="one-time-code" />
           </div>
           <p class="resend-text">
             Didn't receive OTP? 
-            <button type="button" class="resend-button" id="resendOTP">Resend</button>
+            <button type="button" class="resend-button" id="resendOTP" aria-label="Resend OTP">Resend</button>
           </p>
         </div>
 
         <div class="divider">or continue with</div>
 
-        <div class="social-login">
-          <div class="social-section">
+        <div class="social-login">          <div class="social-section">
             <div class="social-buttons">
-              <button type="button" class="social-button" onclick="handleGoogleSignIn()">
-                <img src="assets/google.svg" alt="Google" width="24">
+              <button type="button" class="social-button" id="googleSignIn">
+                <img src="assets/google.svg" alt="Google" width="24" loading="lazy">
                 Sign in with Google
               </button>
-              <button type="button" class="social-button" onclick="handleAppleSignIn()">
-                <img src="assets/apple-logo.svg" alt="Apple" width="24">
+              <button type="button" class="social-button" id="appleSignIn">
+                <img src="assets/apple-logo.svg" alt="Apple" width="24" loading="lazy">
                 Sign in with Apple
               </button>
             </div>
@@ -1032,25 +1040,26 @@
   <script src="js/auth-service.js"></script>
   <script src="js/navigation.js"></script>
   <script src="js/login.js"></script>
-  
-  <script>
+    <script>
   // Initialize Apple Sign-In
-  AppleID.auth.init({
-      clientId: 'YOUR_APPLE_CLIENT_ID',
-      scope: 'name email',
-      redirectURI: 'https://your-app-url/callback',
+  if (config.auth.apple.clientId) {
+    AppleID.auth.init({
+      clientId: config.auth.apple.clientId,
+      scope: config.auth.apple.scope,
+      redirectURI: config.auth.apple.redirectUri,
       state: 'origin:web'
-  });
+    });
 
-  // Handle Apple Sign-In
-  document.addEventListener('AppleIDSignInOnSuccess', (event) => {
+    // Handle Apple Sign-In
+    document.addEventListener('AppleIDSignInOnSuccess', (event) => {
       handleAppleSignIn(event.detail.authorization);
-  });
+    });
 
-  document.addEventListener('AppleIDSignInOnFailure', (error) => {
+    document.addEventListener('AppleIDSignInOnFailure', (error) => {
       console.error('Apple Sign-In failed:', error);
       showError('Apple Sign-In failed. Please try again.');
-  });
+    });
+  }
   </script>
   
   <!-- PWA service worker registration -->
@@ -1103,6 +1112,77 @@
       }
     });
 
+    // --- Utility: Sanitize input to prevent XSS ---
+    function sanitizeInput(str) {
+      return str.replace(/[&<>'"/]/g, function (c) {
+        return ({'&':'&amp;','<':'&lt;','>':'&gt;','\'':'&#39;','"':'&quot;','/':'&#x2F;'}[c]);
+      });
+    }
+
+    // --- OTP Backend Integration ---
+    async function sendOTP(phone) {
+      try {
+        const res = await fetch('https://api.example.com/send-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone })
+        });
+        if (!res.ok) throw new Error('Failed to send OTP');
+        return await res.json();
+      } catch (err) {
+        throw err;
+      }
+    }
+
+    async function verifyOTPApi(phone, otp) {
+      try {
+        const res = await fetch('https://api.example.com/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone, otp })
+        });
+        if (!res.ok) throw new Error('Invalid OTP');
+        return await res.json();
+      } catch (err) {
+        throw err;
+      }
+    }
+
+    // --- Secure session simulation (replace localStorage with cookie simulation) ---
+    function setSessionCookie(name, value) {
+      document.cookie = `${name}=${encodeURIComponent(value)}; path=/; SameSite=Strict;`;
+    }
+    function getSessionCookie(name) {
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? decodeURIComponent(match[2]) : null;
+    }
+    function clearSessionCookies() {
+      document.cookie.split(';').forEach(function(c) {
+        document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
+      });
+    }
+
+    // --- Remember Me logic ---
+    const rememberMe = document.getElementById('rememberMe');
+    if (localStorage.getItem('rememberMe') === 'true') {
+      rememberMe.checked = true;
+      document.getElementById('phoneInput').value = localStorage.getItem('registeredPhone') || '';
+    }
+    rememberMe.addEventListener('change', function() {
+      if (this.checked) {
+        localStorage.setItem('rememberMe', 'true');
+        localStorage.setItem('registeredPhone', document.getElementById('phoneInput').value);
+      } else {
+        localStorage.removeItem('rememberMe');
+        localStorage.removeItem('registeredPhone');
+      }
+    });
+    document.getElementById('phoneInput').addEventListener('input', function() {
+      if (rememberMe.checked) {
+        localStorage.setItem('registeredPhone', this.value);
+      }
+    });
+
     // Handle form submission
     const loginForm = document.getElementById('loginForm');
     const nameInput = document.getElementById('nameInput');
@@ -1135,33 +1215,26 @@
     // Handle form submission
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const name = nameInput.value.trim();
-      const phoneNumber = phoneInput.value;
-
+      let name = sanitizeInput(nameInput.value.trim());
+      let phoneNumber = sanitizeInput(phoneInput.value.trim());
       if (name.length < 2) {
         showError('Please enter a valid name');
         return;
       }
-
-      if (phoneNumber.length !== 10) {
+      if (!/^\d{10}$/.test(phoneNumber)) {
         showError('Please enter a valid 10-digit phone number');
         return;
       }
-
       showLoading();
       try {
-        // Store user details temporarily
+        await sendOTP(phoneNumber);
         sessionStorage.setItem('tempUserName', name);
         sessionStorage.setItem('tempUserPhone', phoneNumber);
-        
-        // Show OTP input container
         otpContainer.style.display = 'block';
         loginForm.style.display = 'none';
-        
-        // Focus first OTP input
         otpInputs[0].focus();
       } catch (error) {
-        showError('Failed to send OTP. Please try again.');
+        showError(error.message || 'Failed to send OTP. Please try again.');
       } finally {
         hideLoading();
       }
@@ -1171,11 +1244,15 @@
     otpInputs.forEach((input, index) => {
       input.addEventListener('input', (e) => {
         if (e.target.value.length === 1) {
-          if (index < otpInputs.length - 1) {
-            otpInputs[index + 1].focus();
+          const nextInput = otpInputs[index + 1];
+          if (nextInput) {
+            nextInput.focus();
           } else {
-            // Last digit entered, verify OTP
-            const otp = Array.from(otpInputs).map(input => input.value).join('');
+            // Last OTP input, trigger verification
+            let otp = '';
+            otpInputs.forEach(input => {
+              otp += input.value;
+            });
             verifyOTP(otp);
           }
         }
@@ -1183,50 +1260,32 @@
 
       input.addEventListener('keydown', (e) => {
         if (e.key === 'Backspace' && !e.target.value && index > 0) {
-          otpInputs[index - 1].focus();
+          const prevInput = otpInputs[index - 1];
+          prevInput.focus();
         }
       });
     });
 
-    // Function to verify OTP
+    // --- Enhanced OTP verification ---
     async function verifyOTP(otp) {
       showLoading();
       try {
         const name = sessionStorage.getItem('tempUserName');
         const phone = sessionStorage.getItem('tempUserPhone');
-        
-        // Create user session
-        const session = {
-          userType: 'phone',
-          name: name,
-          phone: phone,
-          loginTime: new Date().toISOString(),
-          lastActivity: new Date().toISOString(),
-          sessionId: Math.random().toString(36).substr(2, 9)
-        };
-        
-        localStorage.setItem('userSession', JSON.stringify(session));
-        localStorage.setItem('registeredPhone', phone);
-        
-        // Show success message
-        const successMessage = document.createElement('div');
-        successMessage.className = 'success-message show';
-        successMessage.innerHTML = `
-          <i class="material-icons">check_circle</i>
-          Welcome ${name}! Login successful!
-        `;
-        document.querySelector('.login-card').appendChild(successMessage);
-        
-        // Clear temporary storage
-        sessionStorage.clear();
-        
-        // Redirect to dashboard
+        await verifyOTPApi(phone, otp);
+        // Simulate secure session (replace with real backend session in production)
+        setSessionCookie('userSession', JSON.stringify({ userName: name, phoneNumber: phone, loginTime: new Date().toISOString() }));
+        if (rememberMe.checked) {
+          localStorage.setItem('registeredPhone', phone);
+        }
+        showSuccessMessage('OTP verified! Logging you in...');
         setTimeout(() => {
+          hideLoading();
           window.location.replace('dashboard.html');
         }, 1500);
       } catch (error) {
-        showError('Invalid OTP. Please try again.');
-        otpInputs.forEach(input => input.value = '');
+        showError(error.message || 'Failed to verify OTP. Please try again.');
+        otpInputs.forEach(input => { input.value = ''; });
         otpInputs[0].focus();
       } finally {
         hideLoading();
@@ -1282,33 +1341,34 @@
       } finally {
         hideLoading();
       }
-    }
-
-    // Handle Google Sign-In
+    }    // Handle Google Sign-In
     async function handleGoogleSignIn() {
       try {
         showLoading();
-        
-        // Initialize Google Sign-In
+        if (!config.auth.google.clientId) {
+          throw new Error('Google client ID not configured');
+        }
+        // Initialize Google One Tap
         google.accounts.id.initialize({
-          client_id: 'YOUR_GOOGLE_CLIENT_ID',
+          client_id: config.auth.google.clientId,
+          auto_select: false,
           callback: async (response) => {
             try {
-              // Verify the token with your backend
-              const verificationResponse = await fetch('/api/auth/verify-google-token', {
+              // Send token to backend for verification
+              const verificationResponse = await fetch(`${config.api.baseUrl}/auth/verify-google-token`, {
                 method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
+                headers: { 
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
                 },
-                body: JSON.stringify({
-                  credential: response.credential
-                })
+                body: JSON.stringify({ credential: response.credential })
               });
-
+              
               if (!verificationResponse.ok) {
-                throw new Error('Token verification failed');
+                const error = await verificationResponse.json();
+                throw new Error(error.message || 'Token verification failed');
               }
-
+              
               const userData = await verificationResponse.json();
               
               // Create user session
@@ -1321,9 +1381,8 @@
                 lastActivity: new Date().toISOString(),
                 sessionId: Math.random().toString(36).substr(2, 9)
               };
-
-              localStorage.setItem('userSession', JSON.stringify(session));
               
+              localStorage.setItem('userSession', JSON.stringify(session));
               showSuccessMessage(`Welcome ${userData.name}!`);
               
               setTimeout(() => {
@@ -1337,50 +1396,49 @@
             }
           }
         });
-
-        // Trigger Google Sign-In
+        // Show the One Tap prompt
         google.accounts.id.prompt();
       } catch (error) {
         console.error('Google Sign-In Error:', error);
         showError('Google Sign-In failed. Please try again.');
         hideLoading();
       }
-    }
-
-    // Handle Apple Sign-In
+    }    // Handle Apple Sign-In
     async function handleAppleSignIn() {
       try {
         showLoading();
-        
+        if (!config.auth.apple.clientId) {
+          throw new Error('Apple client ID not configured');
+        }
         // Initialize Apple Sign-In
         AppleID.auth.init({
-          clientId: 'YOUR_APPLE_CLIENT_ID',
-          scope: 'name email',
-          redirectURI: 'https://your-app-url/apple-callback',
+          clientId: config.auth.apple.clientId,
+          scope: config.auth.apple.scope,
+          redirectURI: config.auth.apple.redirectUri,
           state: 'origin:web',
           usePopup: true
         });
-
+        // Trigger Apple Sign-In popup
         const response = await AppleID.auth.signIn();
-        
-        // Verify the token with your backend
-        const verificationResponse = await fetch('/api/auth/verify-apple-token', {
+        // Send token to backend for verification
+        const verificationResponse = await fetch(`${config.api.baseUrl}/auth/verify-apple-token`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
+          headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
           },
           body: JSON.stringify({
             id_token: response.id_token,
             authorization_code: response.authorization.code
           })
         });
-
-        if (!verificationResponse.ok) {
-          throw new Error('Token verification failed');
-        }
-
-        const userData = await verificationResponse.json();
         
+        if (!verificationResponse.ok) {
+          const error = await verificationResponse.json();
+          throw new Error(error.message || 'Token verification failed');
+        }
+        
+        const userData = await verificationResponse.json();
         // Create user session
         const session = {
           userType: 'apple',
@@ -1390,11 +1448,8 @@
           lastActivity: new Date().toISOString(),
           sessionId: Math.random().toString(36).substr(2, 9)
         };
-
         localStorage.setItem('userSession', JSON.stringify(session));
-        
         showSuccessMessage(`Welcome ${session.name}!`);
-        
         setTimeout(() => {
           window.location.replace('dashboard.html');
         }, 1500);
@@ -1404,6 +1459,37 @@
       } finally {
         hideLoading();
       }
+    }    // Attach event listeners for social sign-in buttons after DOM is loaded
+    window.addEventListener('DOMContentLoaded', function() {
+      const googleBtn = document.getElementById('googleSignIn');
+      const appleBtn = document.getElementById('appleSignIn');
+      
+      if (googleBtn && config.auth.google.clientId) {
+        googleBtn.addEventListener('click', handleGoogleSignIn);
+      } else {
+        googleBtn.style.display = 'none';
+      }
+      
+      if (appleBtn && config.auth.apple.clientId) {
+        appleBtn.addEventListener('click', handleAppleSignIn);
+      } else {
+        appleBtn.style.display = 'none';
+      }
+    });
+
+    // Show success message utility (if not already defined)
+    function showSuccessMessage(msg) {
+      let successMessage = document.querySelector('.success-message');
+      if (!successMessage) {
+        successMessage = document.createElement('div');
+        successMessage.className = 'success-message';
+        document.querySelector('.login-card').appendChild(successMessage);
+      }
+      successMessage.textContent = msg;
+      successMessage.classList.add('show');
+      setTimeout(() => {
+        successMessage.classList.remove('show');
+      }, 2000);
     }
   </script>
 
@@ -1411,19 +1497,15 @@
   <button id="chatbot-toggle" class="chatbot-btn" title="Chat with Assistant">
     <i class="material-icons">chat</i>
   </button>
-  <div id="chatbot-container" class="chatbot-container" style="display:none;">
-    <!-- You can embed your chatbot UI here, or use an iframe for a bot service -->
+  <div id="chatbot-container" class="chatbot-container" style="display:none;" role="dialog" aria-modal="true" aria-label="Chat Assistant">
     <div class="chatbot-header">
       <span>Chat Assistant</span>
-      <button id="close-chatbot" class="close-btn">&times;</button>
+      <button id="close-chatbot" class="close-btn" aria-label="Close chat">&times;</button>
     </div>
-    <div class="chatbot-body">
-      <!-- Chat messages go here -->
-      <p>Hello! How can I help you?</p>
-    </div>
+    <div class="chatbot-body" id="chatbotBody" tabindex="0" aria-live="polite"></div>
     <div class="chatbot-footer">
-      <input type="text" placeholder="Type your message..." />
-      <button>Send</button>
+      <input type="text" id="chatbotInput" placeholder="Type your message..." aria-label="Type your message" />
+      <button id="chatbotSend" aria-label="Send message">Send</button>
     </div>
   </div>
 
@@ -1434,6 +1516,47 @@
     document.getElementById('close-chatbot').onclick = function() {
       document.getElementById('chatbot-container').style.display = 'none';
     };
+
+    // --- Chatbot Integration ---
+    const chatbotBody = document.getElementById('chatbotBody');
+    const chatbotInput = document.getElementById('chatbotInput');
+    const chatbotSend = document.getElementById('chatbotSend');
+    function renderChatMessage(message, sender) {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = sender === 'user' ? 'chatbot-msg-user' : 'chatbot-msg-bot';
+      msgDiv.setAttribute('role', 'listitem');
+      msgDiv.innerHTML = `<span>${sanitizeInput(message)}</span>`;
+      chatbotBody.appendChild(msgDiv);
+      chatbotBody.scrollTop = chatbotBody.scrollHeight;
+    }
+    chatbotSend.addEventListener('click', sendChatMessage);
+    chatbotInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') sendChatMessage();
+    });
+    function sendChatMessage() {
+      const msg = chatbotInput.value.trim();
+      if (!msg) return;
+      renderChatMessage(msg, 'user');
+      chatbotInput.value = '';
+      chatbotInput.focus();
+      // Simulate API call
+      fetch('https://api.example.com/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg })
+      })
+        .then(res => res.json())
+        .then(data => {
+          renderChatMessage(data.reply || 'Sorry, I did not understand that.', 'bot');
+        })
+        .catch(() => {
+          renderChatMessage('Network error. Please try again.', 'bot');
+        });
+    }
+    // Keyboard accessibility for chatbot
+    chatbotInput.setAttribute('tabindex', '0');
+    chatbotSend.setAttribute('tabindex', '0');
+    chatbotBody.setAttribute('tabindex', '0');
   </script>
 </body>
 </html>

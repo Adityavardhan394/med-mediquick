@@ -1,0 +1,20 @@
+{
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  },
+  "appDistribution": {
+    "android": {
+      "appId": "com.mediquick.app",
+      "groups": ["testers", "developers"]
+    },
+    "ios": {
+      "appId": "com.mediquick.app",
+      "groups": ["testers", "developers"]
+    }
+  }
+} 

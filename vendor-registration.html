@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediQuick - Pharmacy Partner Registration</title>
+    
+    <!-- React and ReactDOM from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/react@17.0.2/umd/react.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@17.0.2/umd/react-dom.development.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.14.7/babel.min.js"></script>
+    
+    <!-- Tailwind CSS and Inter font -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Animate.css for animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .file-drop-zone {
+            transition: all 0.3s ease;
+        }
+
+        .file-drop-zone:hover {
+            background-color: #f3f4f6;
+            border-color: #10b981;
+        }
+
+        .step-transition {
+            transition: all 0.3s ease;
+        }
+
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #10b981;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // Toast Notification Component
+        const Toast = ({ message, type, onClose }) => (
+            <div className={`fixed bottom-4 right-4 p-4 rounded-lg shadow-lg animate-fade-in ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            } text-white flex items-center gap-2`}>
+                <i className={`fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}`}></i>
+                <span>{message}</span>
+                <button onClick={onClose} className="ml-4 hover:opacity-75">
+                    <i className="fas fa-times"></i>
+                </button>
+            </div>
+        );
+
+        // Enhanced Progress Bar Component
+        const ProgressBar = ({ currentStep, totalSteps }) => {
+            const progress = (currentStep / totalSteps) * 100;
+            return (
+                <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6 overflow-hidden">
+                    <div 
+                        className="bg-gradient-to-r from-green-500 to-green-600 h-2.5 rounded-full transition-all duration-500 ease-out"
+                        style={{ width: `${progress}%` }}
+                    ></div>
+                </div>
+            );
+        };
+
+        // Enhanced Step Indicator Component
+        const StepIndicator = ({ currentStep, steps }) => (
+            <div className="flex justify-between mb-8 relative">
+                <div className="absolute top-5 left-0 w-full h-0.5 bg-gray-200 -z-10"></div>
+                {steps.map((step, index) => (
+                    <div key={index} className="flex flex-col items-center relative step-transition">
+                        <div className={`w-12 h-12 flex items-center justify-center rounded-full shadow-lg transition-all duration-300 ${
+                            index < currentStep ? 'bg-green-500 text-white transform scale-105' :
+                            index === currentStep ? 'bg-green-600 text-white transform scale-110' :
+                            'bg-white text-gray-500'
+                        }`}>
+                            {index < currentStep ? (
+                                <i className="fas fa-check animate-bounce"></i>
+                            ) : (
+                                <span className="font-semibold">{index + 1}</span>
+                            )}
+                        </div>
+                        <span className={`text-sm mt-2 font-medium ${
+                            index <= currentStep ? 'text-green-600' : 'text-gray-500'
+                        }`}>{step}</span>
+                    </div>
+                ))}
+            </div>
+        );
+
+        // Enhanced Form Input Component
+        const FormInput = ({ label, type, value, onChange, error, required, placeholder, icon }) => (
+            <div className="mb-4 animate-fade-in">
+                <label className="block text-gray-700 text-sm font-semibold mb-2">
+                    {label} {required && <span className="text-red-500">*</span>}
+                </label>
+                <div className="relative">
+                    {icon && (
+                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                            <i className={`fas ${icon}`}></i>
+                        </span>
+                    )}
+                    <input
+                        type={type}
+                        value={value}
+                        onChange={onChange}
+                        placeholder={placeholder}
+                        className={`w-full px-4 py-2 ${icon ? 'pl-10' : ''} border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300 ${
+                            error ? 'border-red-500' : 'border-gray-300 hover:border-green-500'
+                        }`}
+                    />
+                </div>
+                {error && (
+                    <p className="text-red-500 text-xs mt-1 animate-fade-in">
+                        <i className="fas fa-exclamation-circle mr-1"></i>
+                        {error}
+                    </p>
+                )}
+            </div>
+        );
+
+        // Enhanced File Upload Component
+        const FileUpload = ({ label, onChange, error, required, accept, value }) => (
+            <div className="mb-4 animate-fade-in">
+                <label className="block text-gray-700 text-sm font-semibold mb-2">
+                    {label} {required && <span className="text-red-500">*</span>}
+                </label>
+                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg file-drop-zone">
+                    <div className="space-y-1 text-center">
+                        <i className="fas fa-cloud-upload-alt text-green-500 text-3xl mb-3"></i>
+                        <div className="flex text-sm text-gray-600">
+                            <label className="relative cursor-pointer bg-white rounded-md font-medium text-green-600 hover:text-green-500 focus-within:outline-none">
+                                <span>Upload a file</span>
+                                <input type="file" className="sr-only" onChange={onChange} accept={accept} />
+                            </label>
+                            <p className="pl-1">or drag and drop</p>
+                        </div>
+                        <p className="text-xs text-gray-500">PNG, JPG, PDF up to 10MB</p>
+                        {value && <p className="text-sm text-green-600 mt-2">File selected: {value.name}</p>}
+                    </div>
+                </div>
+                {error && (
+                    <p className="text-red-500 text-xs mt-1 animate-fade-in">
+                        <i className="fas fa-exclamation-circle mr-1"></i>
+                        {error}
+                    </p>
+                )}
+            </div>
+        );
+
+        // Main Registration Form Component
+        const RegistrationForm = () => {
+            const [currentStep, setCurrentStep] = React.useState(0);
+            const [loading, setLoading] = React.useState(false);
+            const [toast, setToast] = React.useState(null);
+            const [formData, setFormData] = React.useState({
+                // Basic Information
+                ownerName: '',
+                ownerEmail: '',
+                ownerPhone: '',
+                alternatePhone: '',
+                
+                // Shop Information
+                shopName: '',
+                shopAddress: '',
+                shopCity: '',
+                shopState: '',
+                shopPincode: '',
+                gstNumber: '',
+                shopTimings: '',
+                deliveryRadius: '',
+                
+                // License Information
+                drugLicenseNumber: '',
+                drugLicenseExpiry: '',
+                establishmentYear: '',
+                registrationNumber: '',
+                
+                // Bank Information
+                bankName: '',
+                accountNumber: '',
+                ifscCode: '',
+                upiId: '',
+                
+                // Additional Information
+                numberOfStaff: '',
+                hasRefrigeration: false,
+                hasHomeDelivery: false,
+                acceptsInsurance: false,
+                
+                // Documents
+                drugLicenseCopy: null,
+                gstCertificate: null,
+                shopPhoto: null,
+                ownerPanCard: null,
+                bankStatement: null,
+                interiorPhotos: null,
+                staffCertificates: null
+            });
+
+            const [errors, setErrors] = React.useState({});
+
+            const steps = [
+                "Basic Info",
+                "Shop Details",
+                "License Info",
+                "Bank Details",
+                "Documents"
+            ];
+
+            const validateStep = () => {
+                const newErrors = {};
+                
+                switch(currentStep) {
+                    case 0:
+                        if (!formData.ownerName) newErrors.ownerName = 'Owner name is required';
+                        if (!formData.ownerEmail) newErrors.ownerEmail = 'Email is required';
+                        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.ownerEmail)) {
+                            newErrors.ownerEmail = 'Please enter a valid email address';
+                        }
+                        if (!formData.ownerPhone) newErrors.ownerPhone = 'Phone number is required';
+                        if (formData.ownerPhone && !/^\d{10}$/.test(formData.ownerPhone)) {
+                            newErrors.ownerPhone = 'Enter valid 10-digit phone number';
+                        }
+                        if (formData.alternatePhone && !/^\d{10}$/.test(formData.alternatePhone)) {
+                            newErrors.alternatePhone = 'Enter valid 10-digit phone number';
+                        }
+                        break;
+                    
+                    case 1:
+                        if (!formData.shopName) newErrors.shopName = 'Shop name is required';
+                        if (!formData.shopAddress) newErrors.shopAddress = 'Address is required';
+                        if (!formData.shopCity) newErrors.shopCity = 'City is required';
+                        if (!formData.shopState) newErrors.shopState = 'State is required';
+                        if (!formData.shopPincode) newErrors.shopPincode = 'PIN code is required';
+                        else if (!/^\d{6}$/.test(formData.shopPincode)) {
+                            newErrors.shopPincode = 'Enter valid 6-digit PIN code';
+                        }
+                        if (!formData.gstNumber) newErrors.gstNumber = 'GST number is required';
+                        else if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(formData.gstNumber)) {
+                            newErrors.gstNumber = 'Enter valid GST number';
+                        }
+                        if (!formData.deliveryRadius) newErrors.deliveryRadius = 'Delivery radius is required';
+                        break;
+                    
+                    case 2:
+                        if (!formData.drugLicenseNumber) newErrors.drugLicenseNumber = 'Drug license number is required';
+                        if (!formData.drugLicenseExpiry) newErrors.drugLicenseExpiry = 'License expiry date is required';
+                        break;
+                    
+                    case 3:
+                        if (!formData.bankName) newErrors.bankName = 'Bank name is required';
+                        if (!formData.accountNumber) newErrors.accountNumber = 'Account number is required';
+                        if (!formData.ifscCode) newErrors.ifscCode = 'IFSC code is required';
+                        break;
+                    
+                    case 4:
+                        if (!formData.drugLicenseCopy) newErrors.drugLicenseCopy = 'Drug license copy is required';
+                        if (!formData.gstCertificate) newErrors.gstCertificate = 'GST certificate is required';
+                        if (!formData.shopPhoto) newErrors.shopPhoto = 'Shop photo is required';
+                        if (!formData.ownerPanCard) newErrors.ownerPanCard = 'PAN card copy is required';
+                        if (!formData.bankStatement) newErrors.bankStatement = 'Bank statement is required';
+                        break;
+                }
+
+                setErrors(newErrors);
+                return Object.keys(newErrors).length === 0;
+            };
+
+            const handleNext = () => {
+                if (validateStep()) {
+                    setCurrentStep(prev => prev + 1);
+                }
+            };
+
+            const handlePrevious = () => {
+                setCurrentStep(prev => prev - 1);
+            };
+
+            const handleSubmit = async () => {
+                if (validateStep()) {
+                    setLoading(true);
+                    try {
+                        const formDataToSend = new FormData();
+                        
+                        // Append all text fields
+                        Object.keys(formData).forEach(key => {
+                            if (typeof formData[key] === 'string' || typeof formData[key] === 'boolean') {
+                                formDataToSend.append(key, formData[key]);
+                            }
+                        });
+
+                        // Append files
+                        Object.keys(formData).forEach(key => {
+                            if (formData[key] instanceof File) {
+                                formDataToSend.append(key, formData[key]);
+                            }
+                        });
+
+                        const response = await fetch('/api/vendor/register', {
+                            method: 'POST',
+                            body: formDataToSend
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('Registration failed');
+                        }
+
+                        setToast({
+                            type: 'success',
+                            message: 'Registration submitted successfully! We will review your application and get back to you soon.'
+                        });
+
+                        // Save form data to localStorage for persistence
+                        localStorage.setItem('vendorFormData', JSON.stringify(formData));
+
+                    } catch (error) {
+                        setToast({
+                            type: 'error',
+                            message: 'Registration failed. Please try again.'
+                        });
+                    } finally {
+                        setLoading(false);
+                    }
+                }
+            };
+
+            const handleChange = (field) => (e) => {
+                const value = e.target.type === 'file' ? e.target.files[0] : e.target.value;
+                setFormData(prev => ({
+                    ...prev,
+                    [field]: value
+                }));
+            };
+
+            const renderStep = () => {
+                switch(currentStep) {
+                    case 0:
+                        return (
+                            <div>
+                                <h2 className="text-xl font-bold mb-4">Basic Information</h2>
+                                <FormInput
+                                    label="Owner's Name"
+                                    type="text"
+                                    value={formData.ownerName}
+                                    onChange={handleChange('ownerName')}
+                                    error={errors.ownerName}
+                                    required
+                                    placeholder="Enter owner's full name"
+                                />
+                                <FormInput
+                                    label="Email Address"
+                                    type="email"
+                                    value={formData.ownerEmail}
+                                    onChange={handleChange('ownerEmail')}
+                                    error={errors.ownerEmail}
+                                    required
+                                    placeholder="Enter email address"
+                                />
+                                <FormInput
+                                    label="Phone Number"
+                                    type="tel"
+                                    value={formData.ownerPhone}
+                                    onChange={handleChange('ownerPhone')}
+                                    error={errors.ownerPhone}
+                                    required
+                                    placeholder="Enter 10-digit phone number"
+                                />
+                                <FormInput
+                                    label="Alternate Phone Number"
+                                    type="tel"
+                                    value={formData.alternatePhone}
+                                    onChange={handleChange('alternatePhone')}
+                                    error={errors.alternatePhone}
+                                    required
+                                    placeholder="Enter alternate 10-digit phone number"
+                                />
+                            </div>
+                        );
+                    
+                    case 1:
+                        return (
+                            <div>
+                                <h2 className="text-xl font-bold mb-4">Shop Details</h2>
+                                <FormInput
+                                    label="Shop Name"
+                                    type="text"
+                                    value={formData.shopName}
+                                    onChange={handleChange('shopName')}
+                                    error={errors.shopName}
+                                    required
+                                    placeholder="Enter shop name"
+                                />
+                                <FormInput
+                                    label="Shop Address"
+                                    type="text"
+                                    value={formData.shopAddress}
+                                    onChange={handleChange('shopAddress')}
+                                    error={errors.shopAddress}
+                                    required
+                                    placeholder="Enter complete shop address"
+                                />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormInput
+                                        label="City"
+                                        type="text"
+                                        value={formData.shopCity}
+                                        onChange={handleChange('shopCity')}
+                                        error={errors.shopCity}
+                                        required
+                                        placeholder="Enter city"
+                                    />
+                                    <FormInput
+                                        label="State"
+                                        type="text"
+                                        value={formData.shopState}
+                                        onChange={handleChange('shopState')}
+                                        error={errors.shopState}
+                                        required
+                                        placeholder="Enter state"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormInput
+                                        label="PIN Code"
+                                        type="text"
+                                        value={formData.shopPincode}
+                                        onChange={handleChange('shopPincode')}
+                                        error={errors.shopPincode}
+                                        required
+                                        placeholder="Enter PIN code"
+                                    />
+                                    <FormInput
+                                        label="GST Number"
+                                        type="text"
+                                        value={formData.gstNumber}
+                                        onChange={handleChange('gstNumber')}
+                                        error={errors.gstNumber}
+                                        required
+                                        placeholder="Enter GST number"
+                                    />
+                                </div>
+                                <FormInput
+                                    label="Shop Timings"
+                                    type="text"
+                                    value={formData.shopTimings}
+                                    onChange={handleChange('shopTimings')}
+                                    error={errors.shopTimings}
+                                    required
+                                    placeholder="Enter shop timings"
+                                />
+                                <FormInput
+                                    label="Delivery Radius"
+                                    type="text"
+                                    value={formData.deliveryRadius}
+                                    onChange={handleChange('deliveryRadius')}
+                                    error={errors.deliveryRadius}
+                                    required
+                                    placeholder="Enter delivery radius"
+                                />
+                            </div>
+                        );
+                    
+                    case 2:
+                        return (
+                            <div>
+                                <h2 className="text-xl font-bold mb-4">License Information</h2>
+                                <FormInput
+                                    label="Drug License Number"
+                                    type="text"
+                                    value={formData.drugLicenseNumber}
+                                    onChange={handleChange('drugLicenseNumber')}
+                                    error={errors.drugLicenseNumber}
+                                    required
+                                    placeholder="Enter drug license number"
+                                />
+                                <FormInput
+                                    label="License Expiry Date"
+                                    type="date"
+                                    value={formData.drugLicenseExpiry}
+                                    onChange={handleChange('drugLicenseExpiry')}
+                                    error={errors.drugLicenseExpiry}
+                                    required
+                                />
+                                <FormInput
+                                    label="Establishment Year"
+                                    type="text"
+                                    value={formData.establishmentYear}
+                                    onChange={handleChange('establishmentYear')}
+                                    error={errors.establishmentYear}
+                                    required
+                                    placeholder="Enter establishment year"
+                                />
+                                <FormInput
+                                    label="Registration Number"
+                                    type="text"
+                                    value={formData.registrationNumber}
+                                    onChange={handleChange('registrationNumber')}
+                                    error={errors.registrationNumber}
+                                    required
+                                    placeholder="Enter registration number"
+                                />
+                            </div>
+                        );
+                    
+                    case 3:
+                        return (
+                            <div>
+                                <h2 className="text-xl font-bold mb-4">Bank Details</h2>
+                                <FormInput
+                                    label="Bank Name"
+                                    type="text"
+                                    value={formData.bankName}
+                                    onChange={handleChange('bankName')}
+                                    error={errors.bankName}
+                                    required
+                                    placeholder="Enter bank name"
+                                />
+                                <FormInput
+                                    label="Account Number"
+                                    type="text"
+                                    value={formData.accountNumber}
+                                    onChange={handleChange('accountNumber')}
+                                    error={errors.accountNumber}
+                                    required
+                                    placeholder="Enter account number"
+                                />
+                                <FormInput
+                                    label="IFSC Code"
+                                    type="text"
+                                    value={formData.ifscCode}
+                                    onChange={handleChange('ifscCode')}
+                                    error={errors.ifscCode}
+                                    required
+                                    placeholder="Enter IFSC code"
+                                />
+                                <FormInput
+                                    label="UPI ID"
+                                    type="text"
+                                    value={formData.upiId}
+                                    onChange={handleChange('upiId')}
+                                    error={errors.upiId}
+                                    required
+                                    placeholder="Enter UPI ID"
+                                />
+                            </div>
+                        );
+                    
+                    case 4:
+                        return (
+                            <div>
+                                <h2 className="text-xl font-bold mb-4">Required Documents</h2>
+                                <FileUpload
+                                    label="Drug License Copy"
+                                    onChange={handleChange('drugLicenseCopy')}
+                                    error={errors.drugLicenseCopy}
+                                    required
+                                    accept=".pdf,.jpg,.jpeg,.png"
+                                />
+                                <FileUpload
+                                    label="GST Certificate"
+                                    onChange={handleChange('gstCertificate')}
+                                    error={errors.gstCertificate}
+                                    required
+                                    accept=".pdf,.jpg,.jpeg,.png"
+                                />
+                                <FileUpload
+                                    label="Shop Photo"
+                                    onChange={handleChange('shopPhoto')}
+                                    error={errors.shopPhoto}
+                                    required
+                                    accept=".jpg,.jpeg,.png"
+                                />
+                                <FileUpload
+                                    label="Owner's PAN Card"
+                                    onChange={handleChange('ownerPanCard')}
+                                    error={errors.ownerPanCard}
+                                    required
+                                    accept=".pdf,.jpg,.jpeg,.png"
+                                />
+                                <FileUpload
+                                    label="Bank Statement/Cancelled Cheque"
+                                    onChange={handleChange('bankStatement')}
+                                    error={errors.bankStatement}
+                                    required
+                                    accept=".pdf,.jpg,.jpeg,.png"
+                                />
+                                <FileUpload
+                                    label="Interior Photos"
+                                    onChange={handleChange('interiorPhotos')}
+                                    error={errors.interiorPhotos}
+                                    required
+                                    accept=".jpg,.jpeg,.png"
+                                />
+                                <FileUpload
+                                    label="Staff Certificates"
+                                    onChange={handleChange('staffCertificates')}
+                                    error={errors.staffCertificates}
+                                    required
+                                    accept=".pdf,.jpg,.jpeg,.png"
+                                />
+                            </div>
+                        );
+                }
+            };
+
+            return (
+                <div className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md mt-8">
+                    <div className="text-center mb-8">
+                        <h1 className="text-3xl font-bold text-green-600">MediQuick</h1>
+                        <p className="text-gray-600 mt-2">Pharmacy Partner Registration</p>
+                    </div>
+
+                    <ProgressBar currentStep={currentStep} totalSteps={steps.length - 1} />
+                    <StepIndicator currentStep={currentStep} steps={steps} />
+
+                    <form className="space-y-6">
+                        {renderStep()}
+
+                        <div className="flex justify-between mt-8">
+                            {currentStep > 0 && (
+                                <button
+                                    type="button"
+                                    onClick={handlePrevious}
+                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                >
+                                    Previous
+                                </button>
+                            )}
+                            {currentStep < steps.length - 1 ? (
+                                <button
+                                    type="button"
+                                    onClick={handleNext}
+                                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                >
+                                    Next
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={handleSubmit}
+                                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                >
+                                    Submit Registration
+                                </button>
+                            )}
+                        </div>
+                    </form>
+                </div>
+            );
+        };
+
+        // App Component
+        const App = () => (
+            <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+                <RegistrationForm />
+            </div>
+        );
+
+        // Render the App
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html> 

@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Sitemap: https://your-site-name.netlify.app/sitemap.xml
+
+Disallow: /private/
+Disallow: /admin/
