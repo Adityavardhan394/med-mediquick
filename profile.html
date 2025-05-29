@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediQuick - Profile Settings</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00b386;
+            --primary-dark: #009973;
+            --primary-light: rgba(0, 179, 134, 0.1);
+            --accent: #FF6B6B;
+            --background: #f0f9f6;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --text: #2d3436;
+            --text-light: #636e72;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+            background: linear-gradient(135deg, #e0f5ed 0%, #b8e6d9 100%);
+        }
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(0, 179, 134, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(0, 179, 134, 0.1) 0%, transparent 40%);
+            animation: gradientMove 20s ease infinite;
+            z-index: -1;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header Section */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 160, 227, 0.1);
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .header:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 160, 227, 0.15);
+        }
+
+        .back-button {
+            position: absolute;
+            left: -60px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--card-bg);
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 179, 134, 0.1);
+            color: var(--primary);
+        }
+
+        .back-button:hover {
+            transform: translateY(-50%) scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 179, 134, 0.15);
+            background: var(--primary-light);
+        }
+
+        .profile-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .profile-picture {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            overflow: hidden;
+            position: relative;
+            border: 3px solid var(--primary);
+            transition: transform 0.3s ease;
+        }
+
+        .profile-picture:hover {
+            transform: scale(1.05);
+        }
+
+        .profile-picture img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-picture .edit-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            cursor: pointer;
+        }
+
+        .profile-picture:hover .edit-overlay {
+            opacity: 1;
+        }
+
+        .profile-text h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #00A0E3, #00E3A0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            position: relative;
+            display: inline-block;
+            padding-bottom: 4px;
+        }
+
+        .profile-text h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40%;
+            height: 3px;
+            background: linear-gradient(135deg, #00A0E3, #00E3A0);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .profile-text h1:hover::after {
+            width: 100%;
+        }
+
+        .profile-text p {
+            color: var(--text-light);
+            font-size: 16px;
+            font-weight: 500;
+            opacity: 0.9;
+            margin-top: 4px;
+            letter-spacing: 0.2px;
+        }
+
+        /* Settings Grid */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .settings-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 30px rgba(0, 179, 134, 0.1);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .settings-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 179, 134, 0.15);
+        }
+
+        .settings-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .settings-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+
+        .settings-content {
+            margin-top: 20px;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px var(--primary-light);
+        }
+
+        /* Care Plan Card */
+        .care-plan-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .care-plan-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .join-button {
+            background: white;
+            color: var(--primary);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .join-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .action-button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .action-button:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .action-button i {
+            color: var(--primary);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .profile-info {
+                flex-direction: column;
+            }
+
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .back-button {
+                position: static;
+                margin-bottom: 20px;
+                transform: none;
+            }
+            .back-button:hover {
+                transform: scale(1.05);
+            }
+
+            .profile-text h1 {
+                font-size: 24px;
+            }
+            
+            .profile-text p {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            nav .container {
+                padding: 0 12px;
+            }
+
+            .back-button {
+                width: 32px;
+                height: 32px;
+                left: 12px;
+            }
+
+            .nav-brand img {
+                width: 24px;
+                height: 24px;
+            }
+
+            .nav-brand span {
+                font-size: 18px;
+            }
+
+            .profile-text h1 {
+                font-size: 22px;
+            }
+            
+            .profile-text p {
+                font-size: 13px;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .settings-card {
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        .settings-card:nth-child(1) { animation-delay: 0.1s; }
+        .settings-card:nth-child(2) { animation-delay: 0.2s; }
+        .settings-card:nth-child(3) { animation-delay: 0.3s; }
+        .settings-card:nth-child(4) { animation-delay: 0.4s; }
+
+        /* Subscription Card Styles */
+        .subscription-card {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 20px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(52, 152, 219, 0.2);
+        }
+
+        .subscription-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+            animation: rotateBg 20s linear infinite;
+        }
+
+        @keyframes rotateBg {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .subscription-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .subscription-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .subscription-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .refill-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .refill-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .refill-card:hover::after {
+            transform: translateX(100%);
+        }
+
+        .refill-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .medicine-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .medicine-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .refill-details {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .refill-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #2ecc71;
+        }
+
+        .status-dot.pending {
+            background: #f1c40f;
+        }
+
+        .subscription-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .control-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .add-subscription-btn {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .add-subscription-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+
+        /* Modal Styles */
+        .subscription-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+        }
+
+        .subscription-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .subscription-modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .frequency-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .frequency-option {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .frequency-option.active {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        /* Update the navigation styles */
+        nav {
+            background: linear-gradient(135deg, #00B4DB, #00E3A0);
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 180, 219, 0.3);
+        }
+
+        nav .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .back-button {
+            background: rgba(255, 255, 255, 0.25);
+            border: none;
+            border-radius: 12px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #FFFFFF;
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: translateY(-50%) scale(1.05);
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .back-button i {
+            font-size: 24px;
+            color: #FFFFFF;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-brand {
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .nav-brand img {
+            width: 32px;
+            height: 32px;
+            filter: brightness(1.2) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+
+        .nav-brand span {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #FFFFFF, #F0F0F0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            letter-spacing: 0.5px;
+        }
+
+        .nav-brand:hover {
+            transform: translateY(-2px);
+        }
+
+        .nav-brand:hover span {
+            background: linear-gradient(135deg, #FFFFFF, #E0F7FF);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            nav .container {
+                padding: 0 16px;
+            }
+
+            .back-button {
+                width: 36px;
+                height: 36px;
+                left: 16px;
+            }
+
+            .back-button i {
+                font-size: 22px;
+            }
+
+            .nav-brand {
+                gap: 8px;
+            }
+
+            .nav-brand img {
+                width: 28px;
+                height: 28px;
+            }
+
+            .nav-brand span {
+                font-size: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            nav .container {
+                padding: 0 12px;
+            }
+
+            .back-button {
+                width: 32px;
+                height: 32px;
+                left: 12px;
+            }
+
+            .back-button i {
+                font-size: 20px;
+            }
+
+            .nav-brand img {
+                width: 24px;
+                height: 24px;
+            }
+
+            .nav-brand span {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <button class="back-button" onclick="window.location.href='dashboard.html'">
+                <i class="material-icons">arrow_back</i>
+            </button>
+            <a href="dashboard.html" class="nav-brand">
+                <img src="assets/logo.svg" alt="MediQuick">
+                <span>MediQuick</span>
+            </a>
+        </div>
+    </nav>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <button class="back-button" onclick="window.location.href='dashboard.html'">
+                <i class="material-icons">arrow_back</i>
+            </button>
+            <div class="profile-info">
+                <div class="profile-picture">
+                    <img id="profileAvatar" src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff" alt="Profile">
+                    <div class="edit-overlay">
+                        <i class="material-icons" style="color: white;">photo_camera</i>
+                    </div>
+                    <input type="file" id="avatarInput" style="display: none;" accept="image/*">
+                </div>
+                <div class="profile-text">
+                    <h1>Hey there!</h1>
+                    <p id="userPhone">9063266307</p>
+                </div>
+            </div>
+            <button class="join-button" onclick="window.location.href='edit-profile.html'">
+                Edit Profile <i class="material-icons" style="vertical-align: middle; margin-left: 5px;">arrow_forward</i>
+            </button>
+        </div>
+
+        <!-- Care Plan Card -->
+        <div class="care-plan-card">
+            <h2>Care Plan membership</h2>
+            <p style="margin-top: 10px;">On average, users save around 3x the price of Care Plan.</p>
+            <button class="join-button">Join now</button>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <button class="action-button" onclick="window.location.href='orders.html'">
+                <i class="material-icons">shopping_bag</i>
+                My Orders
+            </button>
+            <button class="action-button" onclick="window.location.href='lab-tests.html'">
+                <i class="material-icons">science</i>
+                Lab Tests
+            </button>
+            <button class="action-button" onclick="window.location.href='consultations.html'">
+                <i class="material-icons">medical_services</i>
+                Consultations
+            </button>
+            <button class="action-button" onclick="window.location.href='health-records.html'">
+                <i class="material-icons">folder_shared</i>
+                Health Records
+            </button>
+        </div>
+
+        <!-- Subscription Card -->
+        <div class="subscription-card">
+            <div class="subscription-header">
+                <h2 class="subscription-title">Automated Refills & Subscriptions</h2>
+                <button class="add-subscription-btn" onclick="openSubscriptionModal()">
+                    <i class="material-icons">add</i>
+                    New Subscription
+                </button>
+            </div>
+            
+            <div class="subscription-grid">
+                <div class="refill-card">
+                    <div class="medicine-info">
+                        <div class="medicine-icon">
+                            <i class="material-icons">medication</i>
+                        </div>
+                        <div>
+                            <h3>Metformin 500mg</h3>
+                            <p>30 tablets monthly</p>
+                        </div>
+                    </div>
+                    <div class="refill-details">
+                        <div class="refill-status">
+                            <span class="status-dot"></span>
+                            Next refill in 7 days
+                        </div>
+                        <div class="subscription-controls">
+                            <button class="control-btn">
+                                <i class="material-icons">edit</i>
+                                Edit
+                            </button>
+                            <button class="control-btn">
+                                <i class="material-icons">pause</i>
+                                Pause
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="refill-card">
+                    <div class="medicine-info">
+                        <div class="medicine-icon">
+                            <i class="material-icons">medication</i>
+                        </div>
+                        <div>
+                            <h3>Lisinopril 10mg</h3>
+                            <p>60 tablets quarterly</p>
+                        </div>
+                    </div>
+                    <div class="refill-details">
+                        <div class="refill-status">
+                            <span class="status-dot pending"></span>
+                            Pending approval
+                        </div>
+                        <div class="subscription-controls">
+                            <button class="control-btn">
+                                <i class="material-icons">edit</i>
+                                Edit
+                            </button>
+                            <button class="control-btn">
+                                <i class="material-icons">delete</i>
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Grid -->
+        <div class="settings-grid">
+            <div class="settings-card" onclick="window.location.href='rate-purchases.html'">
+                <div class="settings-header">
+                    <div class="settings-icon">
+                        <i class="material-icons">star_rate</i>
+                    </div>
+                    <h3>Rate Purchases</h3>
+                </div>
+                <p>Share your feedback on recent orders</p>
+            </div>
+
+            <div class="settings-card" onclick="window.location.href='payment-methods.html'">
+                <div class="settings-header">
+                    <div class="settings-icon">
+                        <i class="material-icons">payment</i>
+                    </div>
+                    <h3>Payment Methods</h3>
+                </div>
+                <p>Manage your payment options</p>
+            </div>
+
+            <div class="settings-card" onclick="window.location.href='neucoins.html'">
+                <div class="settings-header">
+                    <div class="settings-icon">
+                        <i class="material-icons">currency_bitcoin</i>
+                    </div>
+                    <h3>NeuCoins</h3>
+                </div>
+                <p>View and manage your rewards</p>
+            </div>
+
+            <div class="settings-card" onclick="window.location.href='pill-reminder.html'">
+                <div class="settings-header">
+                    <div class="settings-icon">
+                        <i class="material-icons">notifications</i>
+                    </div>
+                    <h3>Pill Reminder</h3>
+                </div>
+                <p>Set up medication reminders</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subscription Modal -->
+    <div class="subscription-modal" id="subscriptionModal">
+        <div class="modal-content">
+            <h2>Set Up Auto-Refill</h2>
+            <div class="form-group">
+                <label>Select Medicine</label>
+                <select class="form-input">
+                    <option>Metformin 500mg</option>
+                    <option>Lisinopril 10mg</option>
+                    <option>Amlodipine 5mg</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Refill Frequency</label>
+                <div class="frequency-options">
+                    <div class="frequency-option" onclick="selectFrequency(this)">
+                        Weekly
+                    </div>
+                    <div class="frequency-option active" onclick="selectFrequency(this)">
+                        Monthly
+                    </div>
+                    <div class="frequency-option" onclick="selectFrequency(this)">
+                        Quarterly
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Delivery Address</label>
+                <select class="form-input">
+                    <option>Home - 123 Main St</option>
+                    <option>Office - 456 Work Ave</option>
+                    <option>Add New Address</option>
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="join-button" style="flex: 1; background: var(--primary); color: white;" onclick="setupSubscription()">
+                    Set Up Auto-Refill
+                </button>
+                <button class="join-button" style="flex: 1; background: #e0e0e0;" onclick="closeSubscriptionModal()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Profile Picture Upload
+        document.querySelector('.profile-picture').addEventListener('click', function() {
+            document.getElementById('avatarInput').click();
+        });
+
+        document.getElementById('avatarInput').addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Create an image element to resize the uploaded image
+                    const img = new Image();
+                    img.onload = function() {
+                        // Create a canvas to resize the image
+                        const canvas = document.createElement('canvas');
+                        const MAX_SIZE = 256; // Maximum size for the profile picture
+                        
+                        // Calculate new dimensions while maintaining aspect ratio
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        if (width > height) {
+                            if (width > MAX_SIZE) {
+                                height *= MAX_SIZE / width;
+                                width = MAX_SIZE;
+                            }
+                        } else {
+                            if (height > MAX_SIZE) {
+                                width *= MAX_SIZE / height;
+                                height = MAX_SIZE;
+                            }
+                        }
+                        
+                        // Set canvas dimensions
+                        canvas.width = width;
+                        canvas.height = height;
+                        
+                        // Draw and resize image on canvas
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // Convert to base64 with reduced size
+                        const resizedImageUrl = canvas.toDataURL('image/jpeg', 0.8);
+                        
+                        // Update profile avatar
+                        document.getElementById('profileAvatar').src = resizedImageUrl;
+                        
+                        // Save to localStorage
+                        const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                        profileData.personalInfo = profileData.personalInfo || {};
+                        profileData.personalInfo.avatar = resizedImageUrl;
+                        localStorage.setItem('profileData', JSON.stringify(profileData));
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+
+        // Load profile data
+        document.addEventListener('DOMContentLoaded', function() {
+            const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+            if (profileData.personalInfo && profileData.personalInfo.avatar) {
+                document.getElementById('profileAvatar').src = profileData.personalInfo.avatar;
+            }
+        });
+
+        // Subscription Modal Functions
+        function openSubscriptionModal() {
+            document.getElementById('subscriptionModal').classList.add('active');
+        }
+
+        function closeSubscriptionModal() {
+            document.getElementById('subscriptionModal').classList.remove('active');
+        }
+
+        function selectFrequency(element) {
+            document.querySelectorAll('.frequency-option').forEach(opt => {
+                opt.classList.remove('active');
+            });
+            element.classList.add('active');
+        }
+
+        function setupSubscription() {
+            // Here we would normally make an API call to set up the subscription
+            // For demo purposes, we'll just close the modal
+            closeSubscriptionModal();
+            
+            // Show success message
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: #2ecc71;
+                color: white;
+                padding: 15px 25px;
+                border-radius: 10px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                z-index: 1000;
+                animation: slideIn 0.3s ease forwards;
+            `;
+            toast.innerHTML = `
+                <i class="material-icons">check_circle</i>
+                <span>Subscription set up successfully!</span>
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 

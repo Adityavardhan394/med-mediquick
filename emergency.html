@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency SOS - MediQuick</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00b386;
+            --primary-dark: #009973;
+            --primary-light: rgba(0, 179, 134, 0.1);
+            --secondary: #4a90e2;
+            --text-dark: #2c3e50;
+            --text-light: #718096;
+            --background: #f8fafb;
+            --white: #ffffff;
+            --shadow: 0 2px 8px rgba(0,0,0,0.1);
+            --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+            --emergency-red: #dc2626;
+            --emergency-red-light: rgba(220, 38, 38, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', Arial, sans-serif;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        .emergency-header {
+            background: var(--emergency-red);
+            color: white;
+            padding: 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .emergency-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .emergency-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .emergency-header p {
+            font-size: 16px;
+            opacity: 0.9;
+            position: relative;
+        }
+
+        .emergency-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            animation: pulse 2s infinite;
+            position: relative;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title i {
+            color: var(--emergency-red);
+        }
+
+        .hospitals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+
+        .hospital-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            border: 1px solid #e5e7eb;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hospital-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .hospital-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+            border-color: var(--primary);
+        }
+
+        .hospital-card:hover::before {
+            opacity: 1;
+        }
+
+        .hospital-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .hospital-details h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
+        .hospital-details p {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        .hospital-metrics {
+            display: flex;
+            gap: 16px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .metric {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .metric i {
+            color: var(--primary);
+        }
+
+        .call-button {
+            background: var(--emergency-red);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .call-button:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        }
+
+        .emergency-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+
+        .emergency-action {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #e5e7eb;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .emergency-action::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, var(--primary-light), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .emergency-action:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary);
+        }
+
+        .emergency-action:hover::before {
+            opacity: 1;
+        }
+
+        .emergency-action i {
+            font-size: 48px;
+            color: var(--primary);
+            margin-bottom: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .emergency-action h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .emergency-action p {
+            font-size: 14px;
+            color: var(--text-light);
+            position: relative;
+            z-index: 1;
+        }
+
+        .medicine-delivery-form {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 48px;
+            box-shadow: var(--shadow);
+            display: none;
+        }
+
+        .medicine-delivery-form.active {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .medicine-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .medicine-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .medicine-item:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .medicine-item.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            box-shadow: 0 4px 12px rgba(0, 179, 134, 0.2);
+        }
+
+        .emergency-profile {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 48px;
+            box-shadow: var(--shadow);
+            display: none;
+        }
+
+        .emergency-profile.active {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .profile-item {
+            padding: 20px;
+            background: var(--primary-light);
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .profile-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 179, 134, 0.2);
+        }
+
+        .profile-item h4 {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .profile-item p {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            margin: 32px auto;
+            padding: 24px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .qr-code:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast.success {
+            background: var(--primary);
+        }
+
+        .toast.error {
+            background: var(--emergency-red);
+        }
+
+        .toast.info {
+            background: var(--secondary);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
+            .emergency-header h1 {
+                font-size: 24px;
+            }
+
+            .hospitals-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .emergency-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .hospital-card.recommended {
+            border: 2px solid var(--primary);
+            background: var(--primary-light);
+        }
+
+        .ai-recommendation {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--primary);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .hospital-specialties {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .specialty-tag {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .tracking-status, .delivery-status {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            right: 24px;
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+        }
+
+        .tracking-info, .delivery-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .tracking-progress, .delivery-progress {
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            transition: width 1s linear;
+        }
+
+        .medicine-item.recommended {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .qr-container {
+            text-align: center;
+        }
+
+        .qr-container img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        .loading-spinner i {
+            font-size: 48px;
+            color: var(--primary);
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .hospital-card {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        .hospital-card:nth-child(1) { animation-delay: 0.1s; }
+        .hospital-card:nth-child(2) { animation-delay: 0.2s; }
+        .hospital-card:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .ambulance-status {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            right: 24px;
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ambulance-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ambulance-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .cancel-button {
+            background: var(--emergency-red);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .cancel-button:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+        }
+
+        .confirmation-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .confirmation-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 90%;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .confirmation-modal.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .modal-header i {
+            color: var(--emergency-red);
+            font-size: 24px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .modal-button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-button.cancel {
+            background: var(--emergency-red);
+            color: white;
+            border: none;
+        }
+
+        .modal-button.cancel:hover {
+            background: #b91c1c;
+        }
+
+        .modal-button.back {
+            background: #e5e7eb;
+            color: var(--text-dark);
+            border: none;
+        }
+
+        .modal-button.back:hover {
+            background: #d1d5db;
+        }
+
+        .back-button {
+            position: absolute;
+            left: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) translateX(-2px);
+        }
+
+        .back-button i {
+            font-size: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .back-button {
+                left: 16px;
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            
+            .back-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="emergency-header">
+        <button class="back-button" onclick="navigateTo('dashboard.html')">
+            <i class="material-icons">arrow_back</i>
+            Back to Dashboard
+        </button>
+        <i class="material-icons emergency-icon">emergency</i>
+        <h1>Emergency SOS</h1>
+        <p>Get immediate medical assistance</p>
+    </header>
+
+    <div class="container">
+        <section>
+            <h2 class="section-title">
+                <i class="material-icons">local_hospital</i>
+                Nearby Hospitals
+            </h2>
+            <div id="hospitalsList" class="hospitals-grid">
+                <!-- Hospitals will be loaded here -->
+            </div>
+        </section>
+
+        <section>
+            <h2 class="section-title">
+                <i class="material-icons">medical_services</i>
+                Emergency Actions
+            </h2>
+            <div class="emergency-actions">
+                <div class="emergency-action" onclick="showMedicineDelivery()">
+                    <i class="material-icons">local_pharmacy</i>
+                    <h3>Urgent Medicine Delivery</h3>
+                    <p>Get critical medicines within 10 minutes</p>
+                </div>
+                <div class="emergency-action" onclick="showEmergencyProfile()">
+                    <i class="material-icons">qr_code</i>
+                    <h3>Emergency Profile</h3>
+                    <p>View your medical information</p>
+                </div>
+                <div class="emergency-action" onclick="shareLocation()">
+                    <i class="material-icons">share_location</i>
+                    <h3>Share Location</h3>
+                    <p>Share your location with emergency contacts</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="medicineDeliveryForm" class="medicine-delivery-form">
+            <h2 class="section-title">
+                <i class="material-icons">local_shipping</i>
+                Urgent Medicine Delivery
+            </h2>
+            <div class="medicine-list">
+                <div class="medicine-item" onclick="toggleMedicine(this)">
+                    <i class="material-icons">medication</i>
+                    <span>Epinephrine</span>
+                </div>
+                <div class="medicine-item" onclick="toggleMedicine(this)">
+                    <i class="material-icons">medication</i>
+                    <span>Insulin</span>
+                </div>
+                <div class="medicine-item" onclick="toggleMedicine(this)">
+                    <i class="material-icons">medication</i>
+                    <span>Nitroglycerin</span>
+                </div>
+                <div class="medicine-item" onclick="toggleMedicine(this)">
+                    <i class="material-icons">medication</i>
+                    <span>Albuterol</span>
+                </div>
+            </div>
+            <button class="call-button" onclick="requestMedicineDelivery()">
+                <i class="material-icons">local_shipping</i>
+                Request Rush Delivery
+            </button>
+        </section>
+
+        <section id="emergencyProfile" class="emergency-profile">
+            <h2 class="section-title">
+                <i class="material-icons">person</i>
+                Emergency Profile
+            </h2>
+            <div class="profile-grid">
+                <div class="profile-item">
+                    <h4>Blood Type</h4>
+                    <p>O+</p>
+                </div>
+                <div class="profile-item">
+                    <h4>Allergies</h4>
+                    <p>Penicillin</p>
+                </div>
+                <div class="profile-item">
+                    <h4>Conditions</h4>
+                    <p>Asthma</p>
+                </div>
+                <div class="profile-item">
+                    <h4>Medications</h4>
+                    <p>Albuterol</p>
+                </div>
+            </div>
+            <div class="qr-code">
+                <!-- QR code will be generated here -->
+                <div class="text-center text-gray-500">
+                    <i class="material-icons text-4xl">qr_code</i>
+                    <p class="mt-2">Scan for medical info</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        let userLocation = null;
+        let nearbyHospitals = [];
+        let selectedHospital = null;
+        let ambulanceStatus = null;
+        let deliveryStatus = null;
+        let ambulanceTrackingInterval = null;
+
+        // AI-powered health analysis
+        class HealthAI {
+            constructor() {
+                this.model = null;
+                this.initializeAI();
+            }
+
+            async initializeAI() {
+                try {
+                    // Load TensorFlow.js
+                    await this.loadTensorFlow();
+                    // Initialize the model
+                    await this.loadModel();
+                    console.log('AI Model initialized successfully');
+                } catch (error) {
+                    console.error('Error initializing AI:', error);
+                }
+            }
+
+            async loadTensorFlow() {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0/dist/tf.min.js';
+                document.head.appendChild(script);
+                return new Promise((resolve, reject) => {
+                    script.onload = resolve;
+                    script.onerror = reject;
+                });
+            }
+
+            async loadModel() {
+                this.model = tf.sequential({
+                    layers: [
+                        tf.layers.dense({ inputShape: [10], units: 16, activation: 'relu' }),
+                        tf.layers.dense({ units: 8, activation: 'relu' }),
+                        tf.layers.dense({ units: 4, activation: 'softmax' })
+                    ]
+                });
+            }
+
+            async analyzeHealthData(userData) {
+                if (!this.model) {
+                    throw new Error('AI model not loaded');
+                }
+
+                const processedData = this.preprocessData(userData);
+                const predictions = await this.model.predict(processedData).array();
+                
+                return this.generateInsights(predictions[0], userData);
+            }
+
+            preprocessData(userData) {
+                const features = [
+                    userData.heartRate || 0,
+                    userData.bloodPressure || 0,
+                    userData.bloodSugar || 0,
+                    userData.temperature || 0,
+                    userData.oxygenLevel || 0,
+                    userData.respiratoryRate || 0,
+                    userData.painLevel || 0,
+                    userData.consciousness || 0,
+                    userData.bleeding || 0,
+                    userData.trauma || 0
+                ];
+                return tf.tensor2d([features]);
+            }
+
+            generateInsights(predictions, userData) {
+                return {
+                    severity: this.calculateSeverity(predictions),
+                    recommendedActions: this.getRecommendedActions(predictions),
+                    hospitalPriority: this.getHospitalPriority(predictions),
+                    medicinePriority: this.getMedicinePriority(predictions)
+                };
+            }
+
+            calculateSeverity(predictions) {
+                const severity = Math.round(predictions[0] * 100);
+                if (severity >= 80) return 'Critical';
+                if (severity >= 60) return 'Serious';
+                if (severity >= 40) return 'Moderate';
+                return 'Mild';
+            }
+
+            getRecommendedActions(predictions) {
+                const actions = [];
+                if (predictions[1] > 0.7) actions.push('Immediate medical attention required');
+                if (predictions[2] > 0.7) actions.push('Oxygen therapy recommended');
+                if (predictions[3] > 0.7) actions.push('Pain management needed');
+                return actions;
+            }
+
+            getHospitalPriority(predictions) {
+                return Math.round(predictions[0] * 5);
+            }
+
+            getMedicinePriority(predictions) {
+                return Math.round(predictions[1] * 5);
+            }
+        }
+
+        // Initialize AI when page loads
+        const healthAI = new HealthAI();
+
+        // Initialize services when page loads
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Show loading state
+                showLoadingState();
+                
+                // Initialize location services
+                await initializeLocationServices();
+                
+                // Initialize hospitals
+                await initializeHospitals();
+                
+                // Initialize emergency profile
+                initializeEmergencyProfile();
+                
+                // Hide loading state
+                hideLoadingState();
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showToast('Error initializing emergency services. Please refresh the page.', 'error');
+                hideLoadingState();
+            }
+        });
+
+        function showLoadingState() {
+            const loadingOverlay = document.createElement('div');
+            loadingOverlay.className = 'loading-overlay';
+            loadingOverlay.innerHTML = `
+                <div class="loading-spinner">
+                    <i class="material-icons">sync</i>
+                </div>
+                <p>Initializing emergency services...</p>
+            `;
+            document.body.appendChild(loadingOverlay);
+        }
+
+        function hideLoadingState() {
+            const loadingOverlay = document.querySelector('.loading-overlay');
+            if (loadingOverlay) {
+                loadingOverlay.remove();
+            }
+        }
+
+        async function initializeLocationServices() {
+            try {
+                userLocation = await getUserLocation();
+                console.log('Location initialized:', userLocation);
+                return userLocation;
+            } catch (error) {
+                console.error('Location initialization error:', error);
+                // Use default location for testing
+                userLocation = {
+                    lat: 40.7128,
+                    lng: -74.0060
+                };
+                return userLocation;
+            }
+        }
+
+        async function initializeHospitals() {
+            try {
+                const hospitals = await fetchNearbyHospitals();
+                displayHospitals(hospitals);
+                return hospitals;
+            } catch (error) {
+                console.error('Hospital initialization error:', error);
+                // Display mock hospitals for testing
+                const mockHospitals = getMockHospitals();
+                displayHospitals(mockHospitals);
+                return mockHospitals;
+            }
+        }
+
+        function getMockHospitals() {
+            return [
+                {
+                    name: 'City General Hospital',
+                    address: '123 Medical Center Dr',
+                    distance: '0.8 km',
+                    eta: '5 min',
+                    phone: '+1234567890',
+                    specialties: ['Trauma', 'Cardiac', 'Neurology'],
+                    capacity: '85%',
+                    rating: 4.8
+                },
+                {
+                    name: 'St. Mary\'s Medical Center',
+                    address: '456 Health Ave',
+                    distance: '1.2 km',
+                    eta: '8 min',
+                    phone: '+1234567891',
+                    specialties: ['Pediatric', 'Orthopedic', 'Emergency'],
+                    capacity: '65%',
+                    rating: 4.6
+                },
+                {
+                    name: 'Community Hospital',
+                    address: '789 Care Blvd',
+                    distance: '1.5 km',
+                    eta: '10 min',
+                    phone: '+1234567892',
+                    specialties: ['General', 'Surgical', 'ICU'],
+                    capacity: '45%',
+                    rating: 4.4
+                }
+            ];
+        }
+
+        async function getUserLocation() {
+            return new Promise((resolve, reject) => {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        position => {
+                            userLocation = {
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude
+                            };
+                            resolve(userLocation);
+                        },
+                        error => {
+                            console.error('Error getting location:', error);
+                            // Use default location for testing
+                            resolve({
+                                lat: 40.7128,
+                                lng: -74.0060
+                            });
+                        },
+                        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+                    );
+                } else {
+                    console.warn('Geolocation not supported, using default location');
+                    resolve({
+                        lat: 40.7128,
+                        lng: -74.0060
+                    });
+                }
+            });
+        }
+
+        async function fetchNearbyHospitals() {
+            try {
+                // Simulate API call with mock data
+                const mockHospitals = getMockHospitals();
+                return mockHospitals;
+            } catch (error) {
+                console.error('Error fetching hospitals:', error);
+                throw error;
+            }
+        }
+
+        function displayHospitals(hospitals) {
+            const hospitalsList = document.getElementById('hospitalsList');
+            if (!hospitalsList) {
+                console.error('Hospitals list element not found');
+                return;
+            }
+
+            hospitalsList.innerHTML = hospitals.map((hospital, index) => `
+                <div class="hospital-card ${index === 0 ? 'recommended' : ''}">
+                    <div class="hospital-info">
+                        <div class="hospital-details">
+                            <h3>${hospital.name}</h3>
+                            <p>${hospital.address}</p>
+                            <div class="hospital-specialties">
+                                ${hospital.specialties.map(specialty => 
+                                    `<span class="specialty-tag">${specialty}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                        <button class="call-button" onclick="callHospital('${hospital.phone}', '${hospital.name}')">
+                            <i class="material-icons">phone</i>
+                            Call Now
+                        </button>
+                    </div>
+                    <div class="hospital-metrics">
+                        <div class="metric">
+                            <i class="material-icons">place</i>
+                            <span>${hospital.distance}</span>
+                        </div>
+                        <div class="metric">
+                            <i class="material-icons">schedule</i>
+                            <span>ETA: ${hospital.eta}</span>
+                        </div>
+                        <div class="metric">
+                            <i class="material-icons">star</i>
+                            <span>${hospital.rating}</span>
+                        </div>
+                        <div class="metric">
+                            <i class="material-icons">people</i>
+                            <span>${hospital.capacity}</span>
+                        </div>
+                    </div>
+                    ${index === 0 ? '<div class="ai-recommendation">AI Recommended</div>' : ''}
+                </div>
+            `).join('');
+        }
+
+        async function callHospital(phone, hospitalName) {
+            if (ambulanceStatus) {
+                showToast('An ambulance is already on the way', 'error');
+                return;
+            }
+
+            selectedHospital = hospitalName;
+            showToast('Connecting to hospital...', 'info');
+            
+            try {
+                // Simulate hospital call
+                await simulateCall(phone);
+                
+                // Dispatch ambulance
+                await dispatchAmbulance(hospitalName);
+                
+                // Start real-time tracking
+                startAmbulanceTracking();
+            } catch (error) {
+                console.error('Error in emergency response:', error);
+                showToast('Error connecting to hospital', 'error');
+            }
+        }
+
+        async function simulateCall(phone) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    showToast('Connected to hospital', 'success');
+                    resolve();
+                }, 2000);
+            });
+        }
+
+        async function dispatchAmbulance(hospitalName) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    ambulanceStatus = {
+                        status: 'dispatched',
+                        eta: '10 minutes',
+                        hospital: hospitalName
+                    };
+                    showToast(`Ambulance dispatched from ${hospitalName}! ETA: 10 minutes`, 'success');
+                    resolve();
+                }, 2000);
+            });
+        }
+
+        function startAmbulanceTracking() {
+            let timeLeft = 10 * 60; // 10 minutes in seconds
+            ambulanceTrackingInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    clearInterval(ambulanceTrackingInterval);
+                    showToast('Ambulance has arrived!', 'success');
+                    removeAmbulanceStatus();
+                    return;
+                }
+                
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                updateTrackingStatus(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+            }, 1000);
+        }
+
+        function updateTrackingStatus(timeLeft) {
+            const trackingElement = document.createElement('div');
+            trackingElement.className = 'ambulance-status';
+            trackingElement.innerHTML = `
+                <div class="ambulance-info">
+                    <i class="material-icons">local_shipping</i>
+                    <div>
+                        <div>Ambulance from ${selectedHospital}</div>
+                        <div class="text-sm text-gray-500">ETA: ${timeLeft}</div>
+                    </div>
+                </div>
+                <div class="ambulance-actions">
+                    <button class="cancel-button" onclick="showCancelConfirmation()">
+                        <i class="material-icons">close</i>
+                        Cancel Ambulance
+                    </button>
+                </div>
+            `;
+            
+            const existingTracking = document.querySelector('.ambulance-status');
+            if (existingTracking) {
+                existingTracking.remove();
+            }
+            document.body.appendChild(trackingElement);
+        }
+
+        function removeAmbulanceStatus() {
+            const existingTracking = document.querySelector('.ambulance-status');
+            if (existingTracking) {
+                existingTracking.remove();
+            }
+        }
+
+        function showCancelConfirmation() {
+            const modal = document.createElement('div');
+            modal.className = 'confirmation-modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <i class="material-icons">warning</i>
+                        <h3>Cancel Ambulance?</h3>
+                    </div>
+                    <p>Are you sure you want to cancel the ambulance? This action cannot be undone.</p>
+                    <div class="modal-actions">
+                        <button class="modal-button back" onclick="closeConfirmationModal()">
+                            Go Back
+                        </button>
+                        <button class="modal-button cancel" onclick="confirmAmbulanceCancellation()">
+                            Cancel Ambulance
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            setTimeout(() => modal.classList.add('show'), 10);
+        }
+
+        function closeConfirmationModal() {
+            const modal = document.querySelector('.confirmation-modal');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => modal.remove(), 300);
+            }
+        }
+
+        function confirmAmbulanceCancellation() {
+            // Clear the tracking interval
+            if (ambulanceTrackingInterval) {
+                clearInterval(ambulanceTrackingInterval);
+            }
+
+            // Remove the ambulance status display
+            removeAmbulanceStatus();
+
+            // Close the confirmation modal
+            closeConfirmationModal();
+
+            // Show success message
+            showToast('Ambulance cancelled successfully', 'success');
+
+            // Reset ambulance status
+            ambulanceStatus = null;
+            selectedHospital = null;
+
+            // Notify the hospital (simulated)
+            setTimeout(() => {
+                showToast('Hospital has been notified of cancellation', 'info');
+            }, 1000);
+        }
+
+        async function getUserHealthData() {
+            // Simulate getting user's health data
+            return {
+                heartRate: 85,
+                bloodPressure: 120,
+                bloodSugar: 95,
+                temperature: 37.2,
+                oxygenLevel: 98,
+                respiratoryRate: 16,
+                painLevel: 3,
+                consciousness: 1,
+                bleeding: 0,
+                trauma: 0
+            };
+        }
+
+        function initializeEmergencyProfile() {
+            const profileData = JSON.parse(localStorage.getItem('profileData')) || {};
+            const emergencyProfile = document.getElementById('emergencyProfile');
+            
+            if (profileData.emergencyProfile) {
+                const { bloodType, allergies, conditions, medications } = profileData.emergencyProfile;
+                
+                // Update profile display
+                document.querySelector('.profile-item:nth-child(1) p').textContent = bloodType;
+                document.querySelector('.profile-item:nth-child(2) p').textContent = allergies.join(', ');
+                document.querySelector('.profile-item:nth-child(3) p').textContent = conditions.join(', ');
+                document.querySelector('.profile-item:nth-child(4) p').textContent = medications.join(', ');
+                
+                // Generate QR code
+                generateQRCode(profileData.emergencyProfile);
+            }
+        }
+
+        function generateQRCode(profileData) {
+            const qrData = JSON.stringify(profileData);
+            const qrCode = document.querySelector('.qr-code');
+            qrCode.innerHTML = `
+                <div class="qr-container">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}" 
+                         alt="Emergency Profile QR Code">
+                    <p class="mt-2">Scan for medical info</p>
+                </div>
+            `;
+        }
+
+        function showMedicineDelivery() {
+            const form = document.getElementById('medicineDeliveryForm');
+            form.classList.add('active');
+            document.getElementById('emergencyProfile').classList.remove('active');
+            
+            // AI-powered medicine recommendations
+            recommendMedicines();
+        }
+
+        async function recommendMedicines() {
+            try {
+                const userData = await getUserHealthData();
+                const aiInsights = await healthAI.analyzeHealthData(userData);
+                
+                // Highlight recommended medicines based on AI analysis
+                const medicineItems = document.querySelectorAll('.medicine-item');
+                medicineItems.forEach(item => {
+                    const medicineName = item.querySelector('span').textContent;
+                    if (isMedicineRecommended(medicineName, aiInsights)) {
+                        item.classList.add('recommended');
+                    }
+                });
+            } catch (error) {
+                console.error('Error getting medicine recommendations:', error);
+            }
+        }
+
+        function isMedicineRecommended(medicine, aiInsights) {
+            // Simple recommendation logic based on AI insights
+            const criticalMedicines = ['Epinephrine', 'Insulin', 'Nitroglycerin'];
+            return criticalMedicines.includes(medicine) && aiInsights.medicinePriority > 3;
+        }
+
+        async function requestMedicineDelivery() {
+            const selectedMedicines = Array.from(document.querySelectorAll('.medicine-item.selected'))
+                .map(item => item.querySelector('span').textContent);
+            
+            if (selectedMedicines.length === 0) {
+                showToast('Please select at least one medicine', 'error');
+                return;
+            }
+
+            try {
+                // Start delivery tracking
+                deliveryStatus = {
+                    status: 'processing',
+                    medicines: selectedMedicines,
+                    eta: '10 minutes'
+                };
+                
+                showToast('Rush delivery requested! ETA: 10 minutes', 'success');
+                startDeliveryTracking();
+            } catch (error) {
+                console.error('Error requesting delivery:', error);
+                showToast('Error processing delivery request', 'error');
+            }
+        }
+
+        function startDeliveryTracking() {
+            let timeLeft = 10 * 60; // 10 minutes in seconds
+            const trackingInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    clearInterval(trackingInterval);
+                    showToast('Medicine delivery has arrived!', 'success');
+                    return;
+                }
+                
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                updateDeliveryStatus(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+            }, 1000);
+        }
+
+        function updateDeliveryStatus(timeLeft) {
+            const trackingElement = document.createElement('div');
+            trackingElement.className = 'delivery-status';
+            trackingElement.innerHTML = `
+                <div class="delivery-info">
+                    <i class="material-icons">local_shipping</i>
+                    <span>Delivery ETA: ${timeLeft}</span>
+                </div>
+                <div class="delivery-progress">
+                    <div class="progress-bar" style="width: ${(600 - timeLeft) / 6}%"></div>
+                </div>
+            `;
+            
+            const existingTracking = document.querySelector('.delivery-status');
+            if (existingTracking) {
+                existingTracking.remove();
+            }
+            document.body.appendChild(trackingElement);
+        }
+
+        async function shareLocation() {
+            if (!userLocation) {
+                showToast('Unable to get your location', 'error');
+                return;
+            }
+
+            try {
+                // Get emergency contacts from profile
+                const profileData = JSON.parse(localStorage.getItem('profileData')) || {};
+                const emergencyContacts = profileData.emergencyContacts || ['+1234567890', '+1234567891'];
+                
+                // Simulate sharing location
+                const locationData = {
+                    coordinates: userLocation,
+                    timestamp: new Date().toISOString(),
+                    status: 'Emergency'
+                };
+                
+                // Share with each contact
+                for (const contact of emergencyContacts) {
+                    await simulateLocationShare(contact, locationData);
+                }
+                
+                showToast(`Location shared with ${emergencyContacts.length} emergency contacts`, 'success');
+            } catch (error) {
+                console.error('Error sharing location:', error);
+                showToast('Error sharing location', 'error');
+            }
+        }
+
+        async function simulateLocationShare(contact, locationData) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    console.log(`Location shared with ${contact}:`, locationData);
+                    resolve();
+                }, 1000);
+            });
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="material-icons">${
+                    type === 'success' ? 'check_circle' :
+                    type === 'error' ? 'error' :
+                    'info'
+                }</i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Add navigation function
+        function navigateTo(page) {
+            // If there's an active ambulance, show confirmation before leaving
+            if (ambulanceStatus) {
+                const modal = document.createElement('div');
+                modal.className = 'confirmation-modal';
+                modal.innerHTML = `
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <i class="material-icons">warning</i>
+                            <h3>Active Emergency</h3>
+                        </div>
+                        <p>There is an active ambulance on the way. Are you sure you want to leave this page?</p>
+                        <div class="modal-actions">
+                            <button class="modal-button back" onclick="closeConfirmationModal()">
+                                Stay Here
+                            </button>
+                            <button class="modal-button cancel" onclick="confirmNavigation('${page}')">
+                                Leave Page
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                setTimeout(() => modal.classList.add('show'), 10);
+            } else {
+                // If no active ambulance, navigate directly
+                window.location.href = page;
+            }
+        }
+
+        function confirmNavigation(page) {
+            // Clear any active intervals
+            if (ambulanceTrackingInterval) {
+                clearInterval(ambulanceTrackingInterval);
+            }
+            
+            // Remove any active status displays
+            removeAmbulanceStatus();
+            
+            // Close the modal
+            closeConfirmationModal();
+            
+            // Navigate to the specified page
+            window.location.href = page;
+        }
+    </script>
+</body>
+</html> 

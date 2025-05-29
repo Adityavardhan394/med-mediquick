@@ -1,0 +1,2190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediQuick - Browse Medicines</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💊</text></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #00b386;
+      --primary-dark: #009973;
+      --primary-light: rgba(0, 179, 134, 0.1);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #e6fff9, #ffffff);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Enhanced Background Pattern */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" opacity="0.05"><path d="M20 5L25 15H15L20 5Z" fill="%2300b386"/></svg>');
+      background-repeat: repeat;
+      z-index: -1;
+      animation: patternFloat 60s linear infinite;
+    }
+
+    @keyframes patternFloat {
+      0% { background-position: 0 0; }
+      100% { background-position: 100px 100px; }
+    }
+
+    .medicine-card {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: cardAppear 0.6s backwards;
+      border-radius: 1rem;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .medicine-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(0, 179, 134, 0.15);
+    }
+
+    @keyframes cardAppear {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Card Staggered Animation */
+    .medicine-card:nth-child(1) { animation-delay: 0.1s; }
+    .medicine-card:nth-child(2) { animation-delay: 0.2s; }
+    .medicine-card:nth-child(3) { animation-delay: 0.3s; }
+    .medicine-card:nth-child(4) { animation-delay: 0.4s; }
+    .medicine-card:nth-child(5) { animation-delay: 0.5s; }
+    .medicine-card:nth-child(6) { animation-delay: 0.6s; }
+
+    .medicine-icon {
+      transition: all 0.3s ease;
+    }
+
+    .medicine-card:hover .medicine-icon {
+      transform: scale(1.1) rotate(5deg);
+      color: var(--primary);
+    }
+
+    .search-container {
+      position: relative;
+      animation: slideDown 0.5s ease backwards;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .category-pill {
+      transition: all 0.3s ease;
+    }
+
+    .category-pill:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 179, 134, 0.2);
+    }
+
+    /* Enhanced Card Hover Effect */
+    .medicine-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(0,179,134,0.1) 0%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .medicine-card:hover::before {
+      opacity: 1;
+    }
+
+    /* Sort Dropdown Animation */
+    .sort-dropdown {
+      animation: dropdownAppear 0.3s ease;
+      transform-origin: top right;
+    }
+
+    @keyframes dropdownAppear {
+      from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    /* Filter Sidebar Animation */
+    .filter-sidebar {
+      animation: sidebarSlide 0.3s ease;
+    }
+
+    @keyframes sidebarSlide {
+      from {
+        transform: translateX(-100%);
+      }
+      to {
+        transform: translateX(0);
+      }
+    }
+
+    /* Price Range Slider */
+    .price-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      outline: none;
+    }
+
+    .price-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: var(--primary);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .price-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+      box-shadow: 0 0 10px rgba(0,179,134,0.3);
+    }
+
+    /* Cart Badge Animation */
+    .cart-badge {
+      animation: cartBadgePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes cartBadgePop {
+      0% { transform: scale(0); }
+      100% { transform: scale(1); }
+    }
+
+    .toast {
+      animation: toastSlide 0.5s ease forwards;
+    }
+
+    @keyframes toastSlide {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-teal-500 to-green-500 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-3">
+      <div class="flex items-center justify-between">
+        <button onclick="window.location.href='dashboard.html'" 
+                class="flex items-center space-x-2 hover:bg-white/10 px-3 py-2 rounded-lg transition-all duration-300">
+          <i class="material-icons">arrow_back</i>
+          <span class="font-medium">Back</span>
+        </button>
+        <h1 class="text-2xl font-bold">Browse Medicines</h1>
+        <div class="flex items-center gap-4">
+          <button id="voiceAssistantBtn" onclick="toggleVoiceAssistant()" 
+                  class="flex items-center space-x-2 hover:bg-white/10 px-3 py-2 rounded-lg transition-all duration-300">
+            <i class="material-icons">mic</i>
+            <span class="font-medium">AI Assistant</span>
+          </button>
+          <button onclick="window.location.href='prescription-verify.html'" 
+                  class="flex items-center space-x-2 hover:bg-white/10 px-3 py-2 rounded-lg transition-all duration-300">
+            <i class="material-icons">description</i>
+            <span class="font-medium">Verify Prescription</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container mx-auto px-4 py-6">
+    <!-- Search and Filters Row -->
+    <div class="flex flex-col md:flex-row gap-4 mb-8">
+      <!-- Search Bar -->
+      <div class="search-container flex-grow">
+        <div class="relative">
+          <input type="text" 
+                 placeholder="Search medicines, categories, symptoms..." 
+                 class="w-full p-4 pl-12 rounded-xl border-2 border-gray-100 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-300 bg-white/80 backdrop-blur-sm shadow-md"
+          >
+          <i class="material-icons absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">search</i>
+        </div>
+      </div>
+
+      <!-- Sort Dropdown -->
+      <div class="relative">
+        <button onclick="toggleSort()" class="bg-white px-4 py-3 rounded-xl shadow-md flex items-center gap-2 hover:bg-gray-50 transition-all duration-300">
+          <i class="material-icons text-gray-600">sort</i>
+          <span>Sort By</span>
+        </button>
+        <div id="sortDropdown" class="sort-dropdown hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg z-10">
+          <div class="p-2">
+            <button data-sort="price-low-high" class="w-full text-left px-4 py-2 rounded-lg hover:bg-teal-50 transition-all duration-300">
+              <i class="material-icons text-sm mr-2">arrow_upward</i>Price: Low to High
+            </button>
+            <button data-sort="price-high-low" class="w-full text-left px-4 py-2 rounded-lg hover:bg-teal-50 transition-all duration-300">
+              <i class="material-icons text-sm mr-2">arrow_downward</i>Price: High to Low
+            </button>
+            <button data-sort="popularity" class="w-full text-left px-4 py-2 rounded-lg hover:bg-teal-50 transition-all duration-300">
+              <i class="material-icons text-sm mr-2">trending_up</i>Popularity
+            </button>
+            <button data-sort="latest" class="w-full text-left px-4 py-2 rounded-lg hover:bg-teal-50 transition-all duration-300">
+              <i class="material-icons text-sm mr-2">new_releases</i>Latest
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Button (Mobile) -->
+      <button onclick="toggleFilters()" class="md:hidden bg-white px-4 py-3 rounded-xl shadow-md flex items-center gap-2 hover:bg-gray-50 transition-all duration-300">
+        <i class="material-icons text-gray-600">filter_list</i>
+        <span>Filters</span>
+      </button>
+    </div>
+
+    <!-- Smart Inventory Management Section -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+      <h2 class="text-xl font-semibold mb-6 flex items-center gap-2">
+        <i class="material-icons text-teal-500">inventory</i>
+        Smart Inventory Management
+      </h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <!-- Stock Levels -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+            <span class="text-green-700 font-medium">High Stock</span>
+            <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm" id="highStock">4</span>
+          </div>
+          <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+            <span class="text-yellow-700 font-medium">Medium Stock</span>
+            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-sm" id="mediumStock">1</span>
+          </div>
+          <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+            <span class="text-red-700 font-medium">Low Stock</span>
+            <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-sm" id="lowStock">1</span>
+          </div>
+        </div>
+
+        <!-- Real-time Statistics -->
+        <div class="bg-gray-50 rounded-lg p-4">
+          <h3 class="font-medium text-gray-800 mb-4">Real-time Statistics</h3>
+          <div class="space-y-3">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Total Medicines</span>
+              <span class="font-semibold" id="totalMedicines">6</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Low Stock Items</span>
+              <span class="font-semibold text-yellow-600" id="lowStockItems">1</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Out of Stock</span>
+              <span class="font-semibold text-red-600" id="outOfStock">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nearby Pharmacies -->
+        <div class="bg-gray-50 rounded-lg p-4">
+          <h3 class="font-medium text-gray-800 mb-4">Nearby Pharmacies</h3>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-gray-600">HealthCare Pharmacy</span>
+              <span class="text-teal-600 font-medium">0.5 km</span>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-gray-600">MediCare Plus</span>
+              <span class="text-teal-600 font-medium">1.2 km</span>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-gray-600">LifeCare Pharmacy</span>
+              <span class="text-teal-600 font-medium">0.8 km</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delivery Estimates -->
+      <div class="bg-gradient-to-r from-teal-50 to-green-50 rounded-lg p-4">
+        <h3 class="font-medium text-gray-800 mb-4">Delivery Estimates</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="flex items-center gap-3">
+            <i class="material-icons text-teal-500">flash_on</i>
+            <div>
+              <div class="font-medium text-gray-800">Express Delivery</div>
+              <div class="text-sm text-gray-600">10-15 mins</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <i class="material-icons text-blue-500">local_shipping</i>
+            <div>
+              <div class="font-medium text-gray-800">Standard Delivery</div>
+              <div class="text-sm text-gray-600">30-45 mins</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <i class="material-icons text-orange-500">schedule</i>
+            <div>
+              <div class="font-medium text-gray-800">Current Load</div>
+              <div class="text-sm text-orange-600">Medium</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Grid Layout -->
+    <div class="flex flex-col lg:flex-row gap-6">
+      <!-- Enhanced Filters Sidebar -->
+      <div id="filterSidebar" class="filter-sidebar hidden lg:block w-full lg:w-80 bg-white p-6 rounded-xl shadow-lg">
+        <h3 class="text-lg font-semibold mb-6 flex items-center gap-2">
+          <i class="material-icons text-teal-500">tune</i>
+          Filters
+        </h3>
+
+        <!-- Price Range -->
+        <div class="mb-6">
+          <h4 class="font-medium mb-3 flex items-center gap-2">
+            <i class="material-icons text-sm text-gray-500">attach_money</i>
+            Price Range
+          </h4>
+          <input type="range" class="price-slider w-full mb-2" min="0" max="1000" step="10" value="1000">
+          <div class="flex justify-between text-sm text-gray-600">
+            <span>₹0</span>
+            <span id="priceValue">₹1000</span>
+          </div>
+        </div>
+
+        <!-- Categories -->
+        <div class="mb-6">
+          <h4 class="font-medium mb-3 flex items-center gap-2">
+            <i class="material-icons text-sm text-gray-500">category</i>
+            Categories
+          </h4>
+          <div class="space-y-3">
+            <label class="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-all">
+              <input type="checkbox" value="pain-relief" data-category="Pain Relief" class="form-checkbox text-teal-500 rounded">
+              <span class="flex-grow">Pain Relief</span>
+              <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">2</span>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-all">
+              <input type="checkbox" value="cold-flu" data-category="Cold & Flu" class="form-checkbox text-teal-500 rounded">
+              <span class="flex-grow">Cold & Flu</span>
+              <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">1</span>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-all">
+              <input type="checkbox" value="diabetes" data-category="Diabetes Care" class="form-checkbox text-teal-500 rounded">
+              <span class="flex-grow">Diabetes</span>
+              <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">1</span>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-all">
+              <input type="checkbox" value="heart-health" data-category="Heart Health" class="form-checkbox text-teal-500 rounded">
+              <span class="flex-grow">Heart Health</span>
+              <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">1</span>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-all">
+              <input type="checkbox" value="allergy" data-category="Allergy Relief" class="form-checkbox text-teal-500 rounded">
+              <span class="flex-grow">Allergy Relief</span>
+              <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">1</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Availability -->
+        <div class="mb-6">
+          <h4 class="font-medium mb-3 flex items-center gap-2">
+            <i class="material-icons text-sm text-gray-500">inventory_2</i>
+            Availability
+          </h4>
+          <label class="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-all">
+            <input type="checkbox" value="inStockOnly" class="form-checkbox text-teal-500 rounded">
+            <span>In Stock Only</span>
+          </label>
+        </div>
+
+        <!-- Prescription Required -->
+        <div class="mb-6">
+          <h4 class="font-medium mb-3 flex items-center gap-2">
+            <i class="material-icons text-sm text-gray-500">description</i>
+            Prescription
+          </h4>
+          <label class="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-all">
+            <input type="checkbox" value="noPrescriptionNeeded" class="form-checkbox text-teal-500 rounded">
+            <span>No Prescription Needed</span>
+          </label>
+        </div>
+
+        <!-- Clear Filters Button -->
+        <button onclick="clearFilters()" class="w-full bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 px-4 py-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 font-medium">
+          <i class="material-icons text-sm">clear_all</i>
+          <span>Clear All Filters</span>
+        </button>
+      </div>
+
+      <!-- Medicine Grid -->
+      <div class="flex-grow">
+        <!-- Enhanced Loading State -->
+        <div id="loadingState" class="hidden">
+          <div class="bg-white rounded-xl shadow-lg p-8">
+            <div class="text-center">
+              <div class="animate-spin rounded-full h-16 w-16 border-4 border-t-teal-500 border-gray-200 mx-auto mb-4"></div>
+              <h3 class="text-lg font-semibold text-gray-700 mb-2">Loading...</h3>
+              <p class="text-gray-500 mb-4">Checking stock...</p>
+              <div class="w-full bg-gray-200 rounded-full h-2 mb-4">
+                <div class="bg-teal-500 h-2 rounded-full animate-pulse" style="width: 0%" id="loadingProgress"></div>
+              </div>
+              <div class="grid grid-cols-3 gap-4 text-sm text-gray-600">
+                <div>
+                  <div class="font-medium">Current Stock:</div>
+                  <div>Loading...</div>
+                </div>
+                <div>
+                  <div class="font-medium">Reserved:</div>
+                  <div>Loading...</div>
+                </div>
+                <div>
+                  <div class="font-medium">Last Updated:</div>
+                  <div>Loading...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" class="hidden">
+          <div class="bg-white rounded-xl shadow-lg p-8 text-center">
+            <i class="material-icons text-red-500 text-6xl mb-4">error_outline</i>
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">Unable to Load Medicines</h3>
+            <p class="text-gray-500 mb-6" id="errorMessage">Please check your internet connection and try again</p>
+            <button onclick="retryLoading()" class="inline-flex items-center gap-2 bg-teal-500 text-white px-6 py-3 rounded-lg hover:bg-teal-600 transition-all">
+              <i class="material-icons">refresh</i>
+              Retry Loading
+            </button>
+          </div>
+        </div>
+
+        <!-- Medicine Grid -->
+        <div id="medicineGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <!-- Medicine cards will be dynamically inserted here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Cart Button with Badge -->
+  <button onclick="goToCart()" class="fixed bottom-6 right-6 bg-teal-500 text-white p-4 rounded-full shadow-lg hover:bg-teal-600 transition-all duration-300 flex items-center justify-center">
+    <i class="material-icons">shopping_cart</i>
+    <span class="cart-badge absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">0</span>
+  </button>
+
+  <!-- Voice Assistant Modal -->
+  <div id="voiceAssistantModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="p-6">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-gradient-to-r from-teal-500 to-green-500 rounded-full flex items-center justify-center">
+              <i class="material-icons text-white">smart_toy</i>
+            </div>
+            <div>
+              <h2 class="text-xl font-semibold">MediQuick AI Assistant</h2>
+              <p class="text-sm text-gray-500">Ask me about medicines, symptoms, or health queries</p>
+            </div>
+          </div>
+          <button onclick="closeVoiceAssistant()" class="text-gray-400 hover:text-gray-600 transition-all">
+            <i class="material-icons">close</i>
+          </button>
+        </div>
+
+        <!-- Voice Controls -->
+        <div class="text-center mb-6">
+          <button id="startListeningBtn" onclick="startListening()" 
+                  class="w-20 h-20 bg-gradient-to-r from-teal-500 to-green-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-all duration-300 mx-auto mb-4">
+            <i class="material-icons text-3xl" id="micIcon">mic</i>
+          </button>
+          <p class="text-gray-600" id="listeningStatus">Click to start speaking</p>
+          <div class="mt-2">
+            <div id="audioVisualizer" class="hidden flex justify-center items-center gap-1">
+              <div class="w-1 bg-teal-500 rounded-full animate-pulse" style="height: 20px;"></div>
+              <div class="w-1 bg-teal-500 rounded-full animate-pulse" style="height: 30px; animation-delay: 0.1s;"></div>
+              <div class="w-1 bg-teal-500 rounded-full animate-pulse" style="height: 25px; animation-delay: 0.2s;"></div>
+              <div class="w-1 bg-teal-500 rounded-full animate-pulse" style="height: 35px; animation-delay: 0.3s;"></div>
+              <div class="w-1 bg-teal-500 rounded-full animate-pulse" style="height: 20px; animation-delay: 0.4s;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transcription Display -->
+        <div class="mb-6">
+          <h3 class="font-medium text-gray-800 mb-3 flex items-center gap-2">
+            <i class="material-icons text-sm text-gray-500">hearing</i>
+            What I heard:
+          </h3>
+          <div id="transcriptionDisplay" class="bg-gray-50 rounded-lg p-4 min-h-[60px] text-gray-600 italic">
+            Your speech will appear here...
+          </div>
+        </div>
+
+        <!-- AI Response -->
+        <div class="mb-6">
+          <h3 class="font-medium text-gray-800 mb-3 flex items-center gap-2">
+            <i class="material-icons text-sm text-gray-500">psychology</i>
+            AI Response:
+          </h3>
+          <div id="aiResponseDisplay" class="bg-gradient-to-r from-teal-50 to-green-50 rounded-lg p-4 min-h-[100px]">
+            <div id="responseContent" class="text-gray-600 italic">Ask me anything about medicines...</div>
+            <div id="responseActions" class="hidden mt-4 flex gap-2">
+              <button onclick="speakResponse()" class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                <i class="material-icons text-sm">volume_up</i>
+                Speak Response
+              </button>
+              <button onclick="copyResponse()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                <i class="material-icons text-sm">content_copy</i>
+                Copy
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="border-t pt-4">
+          <h4 class="font-medium text-gray-800 mb-3">Quick Questions:</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <button onclick="askQuickQuestion('What is paracetamol used for?')" 
+                    class="text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-all text-sm">
+              "What is paracetamol used for?"
+            </button>
+            <button onclick="askQuickQuestion('Side effects of ibuprofen')" 
+                    class="text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-all text-sm">
+              "Side effects of ibuprofen"
+            </button>
+            <button onclick="askQuickQuestion('Can I take aspirin with food?')" 
+                    class="text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-all text-sm">
+              "Can I take aspirin with food?"
+            </button>
+            <button onclick="askQuickQuestion('What helps with allergies?')" 
+                    class="text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-all text-sm">
+              "What helps with allergies?"
+            </button>
+          </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div class="flex items-start gap-2">
+            <i class="material-icons text-yellow-600 text-sm mt-0.5">warning</i>
+            <div class="text-sm text-yellow-800">
+              <strong>Medical Disclaimer:</strong> This information is for educational purposes only and is not a substitute for professional medical advice. Always consult with a healthcare provider for medical concerns.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Cart state management
+    let cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
+    
+    const updateCartBadge = () => {
+      const badge = document.querySelector('.cart-badge');
+      const totalQuantity = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
+      badge.textContent = totalQuantity;
+      badge.style.display = totalQuantity ? 'flex' : 'none';
+    };
+
+    // Update medicine quantity in the card
+    function updateMedicineQuantity(button, change) {
+      const quantitySpan = button.parentElement.querySelector('span');
+      let quantity = parseInt(quantitySpan.textContent);
+      quantity = Math.max(1, quantity + change);
+      quantitySpan.textContent = quantity;
+    }
+
+    // Additional medicine information
+    const medicineInfo = {
+      'Paracetamol': {
+        uses: 'Relief from fever, headache, and various body pains',
+        sideEffects: 'Rare side effects may include liver problems, skin rashes',
+        dosage: 'Adults: 1-2 tablets every 4-6 hours as needed',
+        warnings: 'Do not exceed 8 tablets in 24 hours. Avoid alcohol.'
+      },
+      'Ibuprofen': {
+        uses: 'Relief from pain, inflammation, and fever',
+        sideEffects: 'May cause stomach upset, heartburn, dizziness',
+        dosage: 'Adults: 200-400mg every 4-6 hours',
+        warnings: 'Take with food. Not recommended for stomach ulcer patients.'
+      },
+      'Metformin': {
+        uses: 'Control blood sugar levels in type 2 diabetes',
+        sideEffects: 'Nausea, diarrhea, stomach upset',
+        dosage: 'As prescribed by your doctor',
+        warnings: 'Prescription only. Regular blood sugar monitoring required.'
+      },
+      'Aspirin': {
+        uses: 'Pain relief, fever reduction, heart attack prevention',
+        sideEffects: 'Stomach upset, increased bleeding risk',
+        dosage: 'Adults: 300-900mg every 4-6 hours',
+        warnings: 'Not recommended for people with bleeding disorders.'
+      },
+      'Cetirizine': {
+        uses: 'Relief from allergy symptoms like sneezing and itching',
+        sideEffects: 'Drowsiness, dry mouth',
+        dosage: 'Adults and children over 12: 10mg once daily',
+        warnings: 'May cause drowsiness. Avoid alcohol.'
+      },
+      'Omeprazole': {
+        uses: 'Treatment of acid reflux and stomach ulcers',
+        sideEffects: 'Headache, stomach pain, nausea',
+        dosage: 'Adults: 20mg once daily',
+        warnings: 'Take on empty stomach. Complete prescribed course.'
+      }
+    };
+
+    // Show medicine details with additional information
+    function showMedicineDetails(medicineCard) {
+      const item = this.mockData.find(item => 
+        item.medicine.name === medicineCard.querySelector('h3').textContent
+      );
+
+      if (!item) return;
+
+      const { medicine, quantity, status, pharmacy } = item;
+      const popup = document.createElement('div');
+      popup.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+      popup.innerHTML = `
+        <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-6">
+              <div>
+                <h2 class="text-2xl font-semibold">${medicine.name}</h2>
+                <p class="text-gray-500">${medicine.brandName}</p>
+              </div>
+              <button onclick="this.closest('.fixed').remove()" 
+                      class="text-gray-400 hover:text-gray-600 transition-all">
+                <i class="material-icons">close</i>
+              </button>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+              <div class="space-y-6">
+                <div class="bg-gradient-to-br from-teal-50 to-green-50 rounded-xl p-8 flex items-center justify-center">
+                  <i class="fas fa-pills text-8xl text-teal-500"></i>
+                </div>
+
+                <div class="bg-gray-50 rounded-xl p-6">
+                  <h3 class="font-medium text-gray-800 mb-4">Pharmacy Information</h3>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-gray-600">Pharmacy</span>
+                      <span class="font-medium">${pharmacy.name}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-gray-600">Distance</span>
+                      <span class="font-medium">${pharmacy.distance}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-gray-600">Rating</span>
+                      <div class="flex items-center">
+                        <i class="material-icons text-yellow-400">star</i>
+                        <span class="ml-1 font-medium">${pharmacy.rating}</span>
+                      </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-gray-600">Address</span>
+                      <span class="font-medium">${pharmacy.address}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="space-y-6">
+                <div class="bg-gray-50 rounded-xl p-6">
+                  <h3 class="font-medium text-gray-800 mb-4">Medicine Details</h3>
+                  <div class="space-y-3">
+                    <div>
+                      <span class="text-gray-600">Category</span>
+                      <p class="font-medium mt-1">${medicine.category}</p>
+                    </div>
+                    <div>
+                      <span class="text-gray-600">Description</span>
+                      <p class="font-medium mt-1">${medicine.description}</p>
+                    </div>
+                    <div>
+                      <span class="text-gray-600">Dosage</span>
+                      <p class="font-medium mt-1">${medicine.dosage}</p>
+                    </div>
+                    <div>
+                      <span class="text-gray-600">Manufacturer</span>
+                      <p class="font-medium mt-1">${medicine.manufacturer}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-gray-50 rounded-xl p-6">
+                  <h3 class="font-medium text-gray-800 mb-4">Usage & Warnings</h3>
+                  <div class="space-y-4">
+                    <div>
+                      <h4 class="text-gray-600 mb-2">Usage Instructions</h4>
+                      <p class="text-gray-800">${medicine.usage}</p>
+                    </div>
+                    <div>
+                      <h4 class="text-gray-600 mb-2">Side Effects</h4>
+                      <ul class="list-disc list-inside space-y-1">
+                        ${medicine.sideEffects.map(effect => 
+                          `<li class="text-gray-800">${effect}</li>`
+                        ).join('')}
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 class="text-gray-600 mb-2">Warnings</h4>
+                      <ul class="list-disc list-inside space-y-1">
+                        ${medicine.warnings.map(warning => 
+                          `<li class="text-gray-800">${warning}</li>`
+                        ).join('')}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-white rounded-xl border-2 border-teal-500 p-6">
+                  <div class="flex items-end justify-between mb-4">
+                    <div>
+                      <h3 class="font-medium text-gray-800">Price</h3>
+                      <div class="flex items-center gap-2 mt-1">
+                        <span class="text-3xl font-bold text-teal-600">₹${medicine.price}</span>
+                        ${medicine.genericAvailable ? 
+                          `<span class="text-sm text-gray-500 line-through">₹${medicine.price * 1.5}</span>` : ''}
+                      </div>
+                      ${medicine.genericAvailable ? 
+                        `<p class="text-sm text-blue-600 mt-1">Generic from ₹${medicine.genericPrice}</p>` : ''}
+                    </div>
+                    <div class="flex items-center gap-4">
+                      <div class="flex items-center bg-gray-100 rounded-lg">
+                        <button class="popup-minus-btn px-3 py-2 text-gray-600 hover:text-teal-600 transition-all">
+                          <i class="material-icons text-sm">remove</i>
+                        </button>
+                        <span class="w-12 text-center">1</span>
+                        <button class="popup-plus-btn px-3 py-2 text-gray-600 hover:text-teal-600 transition-all">
+                          <i class="material-icons text-sm">add</i>
+                        </button>
+                      </div>
+                      <button class="popup-add-to-cart bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg transition-all duration-300 flex items-center gap-2">
+                        <i class="material-icons">add_shopping_cart</i>
+                        Add to Cart
+                      </button>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-4 text-sm text-gray-500">
+                    <div class="flex items-center">
+                      <i class="material-icons text-sm mr-1">verified</i>
+                      <span>Genuine Product</span>
+                    </div>
+                    <div class="flex items-center">
+                      <i class="material-icons text-sm mr-1">security</i>
+                      <span>Safe Delivery</span>
+                    </div>
+                    ${medicine.requiresPrescription ? `
+                      <div class="flex items-center text-yellow-600">
+                        <i class="material-icons text-sm mr-1">description</i>
+                        <span>Prescription Required</span>
+                      </div>
+                    ` : ''}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Similar Medicines -->
+            <div class="mt-8">
+              <h3 class="text-xl font-semibold mb-4">Similar Medicines</h3>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                ${this.getSimilarMedicines(medicine).map(similar => `
+                  <div class="p-4 bg-gray-50 rounded-xl hover:shadow-md transition-all cursor-pointer">
+                    <div class="flex items-center gap-3">
+                      <i class="fas fa-pills text-2xl text-teal-500"></i>
+                      <div>
+                        <h4 class="font-medium">${similar.name}</h4>
+                        <p class="text-sm text-gray-600">₹${similar.price}</p>
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Store the medicineCard reference for the add to cart functionality
+      popup._medicineCard = medicineCard;
+      document.body.appendChild(popup);
+    }
+
+    class MedicineDisplay {
+      constructor() {
+        this.currentLocation = null;
+        this.retryAttempts = 0;
+        this.maxRetries = 3;
+        this.mockData = [
+          {
+            medicine: {
+              _id: '1',
+              name: 'Paracetamol',
+              brandName: 'Crocin',
+              category: 'Pain Relief',
+              description: 'Effective relief from fever and mild to moderate pain',
+              price: 49.99,
+              genericAvailable: true,
+              genericPrice: 29.99,
+              requiresPrescription: false,
+              dosage: '500mg',
+              manufacturer: 'GSK Healthcare',
+              sideEffects: ['Nausea', 'Liver problems in high doses', 'Skin rash'],
+              usage: 'Take 1-2 tablets every 4-6 hours as needed',
+              warnings: ['Do not exceed 8 tablets in 24 hours', 'Avoid alcohol']
+            },
+            quantity: 100,
+            status: 'IN_STOCK',
+            pharmacy: {
+              name: 'HealthCare Pharmacy',
+              distance: '0.5 km',
+              rating: 4.5,
+              address: '123 Health Street'
+            }
+          },
+          {
+            medicine: {
+              _id: '2',
+              name: 'Ibuprofen',
+              brandName: 'Brufen',
+              category: 'Anti-inflammatory',
+              description: 'Reduces inflammation and relieves pain',
+              price: 89.99,
+              genericAvailable: true,
+              genericPrice: 45.99,
+              requiresPrescription: false,
+              dosage: '400mg',
+              manufacturer: 'Abbott',
+              sideEffects: ['Stomach upset', 'Heartburn', 'Dizziness'],
+              usage: 'Take 1 tablet every 6-8 hours after food',
+              warnings: ['Not for stomach ulcer patients', 'Avoid if allergic to aspirin']
+            },
+            quantity: 50,
+            status: 'IN_STOCK',
+            pharmacy: {
+              name: 'MediCare Plus',
+              distance: '1.2 km',
+              rating: 4.8,
+              address: '456 Care Lane'
+            }
+          },
+          {
+            medicine: {
+              _id: '3',
+              name: 'Metformin',
+              brandName: 'Glucophage',
+              category: 'Diabetes Care',
+              description: 'Oral diabetes medicine to control blood sugar',
+              price: 199.99,
+              genericAvailable: true,
+              genericPrice: 129.99,
+              requiresPrescription: true,
+              dosage: '500mg',
+              manufacturer: 'Merck',
+              sideEffects: ['Nausea', 'Diarrhea', 'Loss of appetite'],
+              usage: 'Take as prescribed by your doctor',
+              warnings: ['Regular blood sugar monitoring required', 'Avoid alcohol']
+            },
+            quantity: 0,
+            status: 'OUT_OF_STOCK',
+            pharmacy: {
+              name: 'City Pharmacy',
+              distance: '2.0 km',
+              rating: 4.2,
+              address: '789 Medical Complex'
+            }
+          },
+          {
+            medicine: {
+              _id: '4',
+              name: 'Aspirin',
+              brandName: 'Disprin',
+              category: 'Heart Health',
+              description: 'Blood-thinning medication for heart health',
+              price: 79.99,
+              genericAvailable: true,
+              genericPrice: 39.99,
+              requiresPrescription: false,
+              dosage: '75mg',
+              manufacturer: 'Bayer',
+              sideEffects: ['Stomach upset', 'Increased bleeding risk'],
+              usage: 'Take one tablet daily with food',
+              warnings: ['Not for people with bleeding disorders', 'Avoid if allergic to NSAIDs']
+            },
+            quantity: 75,
+            status: 'IN_STOCK',
+            pharmacy: {
+              name: 'LifeCare Pharmacy',
+              distance: '0.8 km',
+              rating: 4.6,
+              address: '321 Health Hub'
+            }
+          },
+          {
+            medicine: {
+              _id: '5',
+              name: 'Cetirizine',
+              brandName: 'Zyrtec',
+              category: 'Allergy Relief',
+              description: '24-hour relief from allergy symptoms',
+              price: 69.99,
+              genericAvailable: true,
+              genericPrice: 35.99,
+              requiresPrescription: false,
+              dosage: '10mg',
+              manufacturer: 'UCB Pharma',
+              sideEffects: ['Drowsiness', 'Dry mouth', 'Fatigue'],
+              usage: 'Take one tablet daily',
+              warnings: ['May cause drowsiness', 'Avoid alcohol']
+            },
+            quantity: 30,
+            status: 'LOW_STOCK',
+            pharmacy: {
+              name: 'Wellness Pharmacy',
+              distance: '1.5 km',
+              rating: 4.4,
+              address: '567 Medical Street'
+            }
+          },
+          {
+            medicine: {
+              _id: '6',
+              name: 'Omeprazole',
+              brandName: 'Prilosec',
+              category: 'Acid Reflux',
+              description: 'Reduces stomach acid production',
+              price: 129.99,
+              genericAvailable: true,
+              genericPrice: 79.99,
+              requiresPrescription: false,
+              dosage: '20mg',
+              manufacturer: 'AstraZeneca',
+              sideEffects: ['Headache', 'Stomach pain', 'Nausea'],
+              usage: 'Take one capsule daily before breakfast',
+              warnings: ['Complete prescribed course', 'Take on empty stomach']
+            },
+            quantity: 85,
+            status: 'IN_STOCK',
+            pharmacy: {
+              name: 'HealthCare Pharmacy',
+              distance: '0.5 km',
+              rating: 4.5,
+              address: '123 Health Street'
+            }
+          }
+        ];
+        this.currentSort = null;
+        this.init();
+      }
+
+      async init() {
+        try {
+          showLoading();
+          await this.getUserLocation();
+          await this.loadMedicinesWithInventory();
+          this.setupSearch();
+          this.updateStatistics();
+          hideLoading();
+        } catch (error) {
+          console.error('Error initializing medicine display:', error);
+          this.handleError(error);
+        }
+      }
+
+      setupSearch() {
+        const searchInput = document.querySelector('input[type="text"]');
+        const sortDropdown = document.getElementById('sortDropdown');
+        const filterSidebar = document.getElementById('filterSidebar');
+        if (!searchInput || !sortDropdown || !filterSidebar) return;
+
+        searchInput.addEventListener('input', () => this.filterAndSortMedicines());
+        const priceSlider = filterSidebar.querySelector('.price-slider');
+        if (priceSlider) priceSlider.addEventListener('input', () => this.filterAndSortMedicines());
+        const categoryCheckboxes = filterSidebar.querySelectorAll('input[data-category]');
+        categoryCheckboxes.forEach(checkbox => checkbox.addEventListener('change', () => this.filterAndSortMedicines()));
+        filterSidebar.querySelectorAll('input[value="inStockOnly"],input[value="noPrescriptionNeeded"]').forEach(checkbox => checkbox.addEventListener('change', () => this.filterAndSortMedicines()));
+        sortDropdown.querySelectorAll('button[data-sort]').forEach(option => {
+          option.addEventListener('click', (e) => {
+            this.currentSort = e.target.getAttribute('data-sort');
+            this.filterAndSortMedicines();
+            sortDropdown.classList.add('hidden');
+          });
+        });
+      }
+
+      filterAndSortMedicines() {
+        const searchTerm = document.querySelector('input[type="text"]').value.toLowerCase();
+        const priceSlider = document.querySelector('.price-slider');
+        const maxPrice = priceSlider ? parseFloat(priceSlider.value) : 1000;
+        const selectedCategories = Array.from(document.querySelectorAll('input[data-category]:checked')).map(cb => cb.getAttribute('data-category'));
+        const inStockOnly = document.querySelector('input[value="inStockOnly"]')?.checked;
+        const noPrescriptionNeeded = document.querySelector('input[value="noPrescriptionNeeded"]')?.checked;
+
+        let filteredData = this.mockData.filter(item => {
+          const { medicine } = item;
+          const matchesSearch = medicine.name.toLowerCase().includes(searchTerm) ||
+            medicine.category.toLowerCase().includes(searchTerm) ||
+            medicine.description.toLowerCase().includes(searchTerm);
+          const matchesPrice = medicine.price <= maxPrice;
+          const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(medicine.category);
+          const matchesStock = !inStockOnly || item.status === 'IN_STOCK';
+          const matchesPrescription = !noPrescriptionNeeded || !medicine.requiresPrescription;
+          return matchesSearch && matchesPrice && matchesCategory && matchesStock && matchesPrescription;
+        });
+
+        if (this.currentSort) {
+          filteredData.sort((a, b) => {
+            switch (this.currentSort) {
+              case 'price-low-high': return a.medicine.price - b.medicine.price;
+              case 'price-high-low': return b.medicine.price - a.medicine.price;
+              case 'popularity': return (b.quantity || 0) - (a.quantity || 0);
+              case 'latest': return (parseFloat(a.pharmacy.distance) || 0) - (parseFloat(b.pharmacy.distance) || 0);
+              default: return 0;
+            }
+          });
+        }
+        this.displayMedicinesWithInventory(filteredData);
+        this.updateResultCount(filteredData.length);
+      }
+
+      updateResultCount(count) {
+        const container = document.getElementById('medicineGrid');
+        let existingCount = container.querySelector('.result-count');
+        if (existingCount) existingCount.remove();
+        const countElement = document.createElement('div');
+        countElement.className = 'result-count col-span-full mb-4 text-gray-600';
+        countElement.textContent = `${count} medicines found`;
+        container.prepend(countElement);
+      }
+
+      async getUserLocation() {
+        return new Promise((resolve) => {
+          if (!('geolocation' in navigator)) {
+            this.currentLocation = { lat: 0, lng: 0 };
+            resolve(this.currentLocation);
+            return;
+          }
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              this.currentLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
+              resolve(this.currentLocation);
+            },
+            () => {
+              this.currentLocation = { lat: 0, lng: 0 };
+              resolve(this.currentLocation);
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+          );
+        });
+      }
+
+      async loadMedicinesWithInventory() {
+        this.displayMedicinesWithInventory(this.mockData);
+        this.clearError();
+      }
+
+      displayMedicinesWithInventory(inventory) {
+        const container = document.getElementById('medicineGrid');
+        container.innerHTML = inventory.map(item => this.createMedicineCard(item)).join('');
+        this.setupCardEventListeners();
+      }
+
+      createMedicineCard(item) {
+        const { medicine, quantity, status, pharmacy } = item;
+        const statusClass = this.getStatusClass(status);
+        const statusText = this.getStatusText(status);
+        const prescriptionBadge = medicine.requiresPrescription ? 
+          '<span class="bg-yellow-100 text-yellow-600 text-xs px-2 py-1 rounded-full ml-2">Prescription Required</span>' : '';
+        const genericBadge = medicine.genericAvailable ?
+          '<span class="bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded-full ml-2">Generic Available</span>' : '';
+
+        return `
+          <div class="medicine-card bg-white rounded-2xl shadow-md overflow-hidden relative cursor-pointer transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl">
+            <div class="absolute top-4 right-4 z-10">
+              ${statusClass === 'bg-teal-100' ? 
+                `<div class="flex items-center bg-teal-100 px-2 py-1 rounded-full">
+                  <i class="material-icons text-teal-600 text-sm mr-1">local_shipping</i>
+                  <span class="text-xs text-teal-600">${pharmacy.distance} away</span>
+                </div>` : ''}
+            </div>
+            
+            <div class="h-48 bg-gradient-to-br from-teal-50 to-green-50 flex items-center justify-center relative overflow-hidden">
+              <i class="medicine-icon fas fa-pills text-6xl text-teal-500 transform transition-all duration-300"></i>
+              ${status === 'LOW_STOCK' ? 
+                `<div class="absolute bottom-2 right-2 bg-yellow-100 text-yellow-600 text-xs px-2 py-1 rounded-full">
+                  Only ${quantity} left
+                </div>` : ''}
+            </div>
+
+            <div class="p-6">
+              <div class="flex justify-between items-start mb-4">
+                <div>
+                  <h3 class="text-xl font-semibold text-gray-800 mb-1">${medicine.name}</h3>
+                  <p class="text-sm text-gray-500">${medicine.brandName}</p>
+                  <div class="flex items-center mt-2">
+                    <span class="text-sm text-gray-500 flex items-center">
+                      <i class="material-icons text-sm mr-1">category</i>
+                      ${medicine.category}
+                    </span>
+                    <span class="mx-2">•</span>
+                    <span class="text-sm text-gray-500 flex items-center">
+                      <i class="material-icons text-sm mr-1">medication</i>
+                      ${medicine.dosage}
+                    </span>
+                  </div>
+                </div>
+                <div class="flex flex-col items-end">
+                  <span class="${statusClass} mb-2">${statusText}</span>
+                  ${prescriptionBadge}
+                  ${genericBadge}
+                </div>
+              </div>
+
+              <p class="text-sm text-gray-600 mb-4 line-clamp-2">${medicine.description}</p>
+
+              <div class="flex justify-between items-end">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-2xl font-bold text-teal-600">₹${medicine.price}</span>
+                    ${medicine.genericAvailable ? 
+                      `<span class="text-sm text-gray-500 line-through">₹${medicine.price * 1.5}</span>` : ''}
+                  </div>
+                  ${medicine.genericAvailable ? 
+                    `<p class="text-sm text-blue-600 mt-1">Generic from ₹${medicine.genericPrice}</p>` : ''}
+                  <div class="flex items-center mt-2 text-sm text-gray-500">
+                    <i class="material-icons text-sm mr-1">store</i>
+                    <span>${pharmacy.name}</span>
+                    <span class="mx-1">•</span>
+                    <div class="flex items-center">
+                      <i class="material-icons text-yellow-400 text-sm">star</i>
+                      <span class="ml-1">${pharmacy.rating}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                  ${this.getQuantityControls(item)}
+                </div>
+              </div>
+
+              <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
+                <button onclick="medicineDisplay.showMedicineDetails(this.closest('.medicine-card'))"
+                        class="text-teal-600 hover:text-teal-700 text-sm flex items-center gap-1 transition-all">
+                  <i class="material-icons text-sm">info</i>
+                  View Details
+                </button>
+                ${status !== 'OUT_OF_STOCK' ? 
+                  `<div class="flex items-center text-sm">
+                    <div class="flex items-center text-gray-500 mr-4">
+                      <i class="material-icons text-sm mr-1">verified</i>
+                      <span>Genuine</span>
+                    </div>
+                    <div class="flex items-center text-gray-500">
+                      <i class="material-icons text-sm mr-1">security</i>
+                      <span>Safe</span>
+                    </div>
+                  </div>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      getStatusClass(status) {
+        switch (status) {
+          case 'IN_STOCK':
+            return 'bg-teal-100 text-teal-600 text-xs px-2 py-1 rounded-full';
+          case 'LOW_STOCK':
+            return 'bg-yellow-100 text-yellow-600 text-xs px-2 py-1 rounded-full';
+          case 'OUT_OF_STOCK':
+            return 'bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full';
+          default:
+            return 'bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full';
+        }
+      }
+
+      getStatusText(status) {
+        switch (status) {
+          case 'IN_STOCK':
+            return 'In Stock';
+          case 'LOW_STOCK':
+            return 'Low Stock';
+          case 'OUT_OF_STOCK':
+            return 'Out of Stock';
+          default:
+            return 'Unknown';
+        }
+      }
+
+      getQuantityControls(item) {
+        if (item.status === 'OUT_OF_STOCK') {
+          return `
+            <button onclick="medicineDisplay.findAlternatives('${item.medicine._id}')" 
+                    class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center gap-2">
+              <i class="material-icons text-sm">swap_horiz</i>
+              <span>Find Alternatives</span>
+            </button>
+          `;
+        }
+
+        return `
+          <div class="flex items-center bg-gray-100 rounded-lg">
+            <button class="minus-btn px-3 py-2 text-gray-600 hover:text-teal-600 transition-all">
+              <i class="material-icons text-sm">remove</i>
+            </button>
+            <span class="w-12 text-center">1</span>
+            <button class="plus-btn px-3 py-2 text-gray-600 hover:text-teal-600 transition-all">
+              <i class="material-icons text-sm">add</i>
+            </button>
+          </div>
+          <button type="button" class="add-to-cart-btn bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center gap-2">
+            <i class="material-icons text-sm">add_shopping_cart</i>
+            <span>Add</span>
+          </button>
+        `;
+      }
+
+      async findAlternatives(medicineId) {
+        try {
+          const response = await fetch(
+            `/api/inventory/alternatives/${medicineId}?lat=${this.currentLocation.lat}&lng=${this.currentLocation.lng}`
+          );
+          
+          if (!response.ok) {
+            throw new Error('Failed to fetch alternatives');
+          }
+
+          const alternatives = await response.json();
+          this.showAlternativesPopup(alternatives);
+        } catch (error) {
+          console.error('Error finding alternatives:', error);
+          showToast('Error finding alternative medicines', 'error');
+        }
+      }
+
+      showAlternativesPopup(alternatives) {
+        const popup = document.createElement('div');
+        popup.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        popup.innerHTML = `
+          <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+              <div class="flex justify-between items-start mb-6">
+                <h2 class="text-2xl font-semibold">Alternative Medicines</h2>
+                <button onclick="this.closest('.fixed').remove()" 
+                        class="text-gray-400 hover:text-gray-600 transition-all">
+                  <i class="material-icons">close</i>
+                </button>
+              </div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ${alternatives.map(alt => this.createAlternativeCard(alt)).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.body.appendChild(popup);
+      }
+
+      createAlternativeCard(alternative) {
+        return `
+          <div class="bg-white rounded-xl border p-4 hover:border-teal-500 transition-all duration-300">
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="font-medium">${alternative.medicine.name}</h3>
+              <span class="bg-teal-100 text-teal-600 text-xs px-2 py-1 rounded-full">In Stock</span>
+            </div>
+            <p class="text-sm text-gray-600 mb-2">${alternative.medicine.description}</p>
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-teal-600">₹${alternative.medicine.price}</span>
+              <button onclick="medicineDisplay.addToCart(${JSON.stringify(alternative)})" 
+                      class="bg-teal-500 hover:bg-teal-600 text-white px-3 py-1 rounded-lg text-sm">
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      setupCardEventListeners() {
+        document.querySelectorAll('.medicine-card').forEach(card => {
+          // Quantity controls
+          const minusBtn = card.querySelector('.minus-btn');
+          const plusBtn = card.querySelector('.plus-btn');
+          if (minusBtn && plusBtn) {
+            minusBtn.addEventListener('click', (e) => { e.stopPropagation(); this.updateQuantity(minusBtn, -1); });
+            plusBtn.addEventListener('click', (e) => { e.stopPropagation(); this.updateQuantity(plusBtn, 1); });
+          }
+          // Add to cart
+          const addToCartBtn = card.querySelector('.add-to-cart-btn');
+          if (addToCartBtn) {
+            addToCartBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const name = card.querySelector('h3').textContent;
+              const item = this.mockData.find(item => item.medicine.name === name);
+              const quantity = parseInt(card.querySelector('.flex.items-center.bg-gray-100 span').textContent);
+              this.addToCart(item.medicine, quantity);
+            });
+          }
+          // Details
+          card.querySelectorAll('.view-details-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => { e.stopPropagation(); this.showMedicineDetails(card); });
+          });
+          // Card click for details
+          card.addEventListener('click', () => this.showMedicineDetails(card));
+        });
+      }
+
+      updateQuantity(btn, change) {
+        const span = btn.parentElement.querySelector('span');
+        let qty = parseInt(span.textContent) || 1;
+        qty = Math.max(1, qty + change);
+        span.textContent = qty;
+      }
+
+      addToCart(medicine, quantity) {
+        const isPrescriptionRequired = medicine.requiresPrescription;
+        const addItemToCart = () => {
+          const existingItemIndex = cartItems.findIndex(item => item.name === medicine.name);
+          if (existingItemIndex !== -1) {
+            cartItems[existingItemIndex].quantity = (cartItems[existingItemIndex].quantity || 1) + quantity;
+            showToast(`Added ${quantity} more ${medicine.name} (${cartItems[existingItemIndex].quantity} total)`);
+          } else {
+            cartItems.push({ name: medicine.name, price: `₹${medicine.price}`, priceValue: medicine.price, quantity });
+            showToast(`Added ${quantity} ${medicine.name} to cart!`);
+          }
+          localStorage.setItem('cartItems', JSON.stringify(cartItems));
+          updateCartBadge();
+        };
+        if (isPrescriptionRequired) {
+          showPrescriptionPopup(medicine.name, addItemToCart);
+        } else {
+          addItemToCart();
+        }
+      }
+
+      showMedicineDetails(medicineCard) {
+        const item = this.mockData.find(item => 
+          item.medicine.name === medicineCard.querySelector('h3').textContent
+        );
+        if (!item) return;
+        const { medicine, quantity, status, pharmacy } = item;
+        const popup = document.createElement('div');
+        popup.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        popup.innerHTML = `
+          <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+              <div class="flex justify-between items-start mb-6">
+                <div>
+                  <h2 class="text-2xl font-semibold">${medicine.name}</h2>
+                  <p class="text-gray-500">${medicine.brandName}</p>
+                </div>
+                <button onclick="this.closest('.fixed').remove()" 
+                        class="text-gray-400 hover:text-gray-600 transition-all">
+                  <i class="material-icons">close</i>
+                </button>
+              </div>
+              <div class="grid md:grid-cols-2 gap-6">
+                <div class="space-y-6">
+                  <div class="bg-gradient-to-br from-teal-50 to-green-50 rounded-xl p-8 flex items-center justify-center">
+                    <i class="fas fa-pills text-8xl text-teal-500"></i>
+                  </div>
+                  <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="font-medium text-gray-800 mb-4">Pharmacy Information</h3>
+                    <div class="space-y-3">
+                      <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Pharmacy</span>
+                        <span class="font-medium">${pharmacy.name}</span>
+                      </div>
+                      <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Distance</span>
+                        <span class="font-medium">${pharmacy.distance}</span>
+                      </div>
+                      <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Rating</span>
+                        <div class="flex items-center">
+                          <i class="material-icons text-yellow-400">star</i>
+                          <span class="ml-1 font-medium">${pharmacy.rating}</span>
+                        </div>
+                      </div>
+                      <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Address</span>
+                        <span class="font-medium">${pharmacy.address}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="space-y-6">
+                  <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="font-medium text-gray-800 mb-4">Medicine Details</h3>
+                    <div class="space-y-3">
+                      <div>
+                        <span class="text-gray-600">Category</span>
+                        <p class="font-medium mt-1">${medicine.category}</p>
+                      </div>
+                      <div>
+                        <span class="text-gray-600">Description</span>
+                        <p class="font-medium mt-1">${medicine.description}</p>
+                      </div>
+                      <div>
+                        <span class="text-gray-600">Dosage</span>
+                        <p class="font-medium mt-1">${medicine.dosage}</p>
+                      </div>
+                      <div>
+                        <span class="text-gray-600">Manufacturer</span>
+                        <p class="font-medium mt-1">${medicine.manufacturer}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="font-medium text-gray-800 mb-4">Usage & Warnings</h3>
+                    <div class="space-y-4">
+                      <div>
+                        <h4 class="text-gray-600 mb-2">Usage Instructions</h4>
+                        <p class="text-gray-800">${medicine.usage}</p>
+                      </div>
+                      <div>
+                        <h4 class="text-gray-600 mb-2">Side Effects</h4>
+                        <ul class="list-disc list-inside space-y-1">
+                          ${medicine.sideEffects.map(effect => 
+                            `<li class="text-gray-800">${effect}</li>`
+                          ).join('')}
+                        </ul>
+                      </div>
+                      <div>
+                        <h4 class="text-gray-600 mb-2">Warnings</h4>
+                        <ul class="list-disc list-inside space-y-1">
+                          ${medicine.warnings.map(warning => 
+                            `<li class="text-gray-800">${warning}</li>`
+                          ).join('')}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bg-white rounded-xl border-2 border-teal-500 p-6">
+                    <div class="flex items-end justify-between mb-4">
+                      <div>
+                        <h3 class="font-medium text-gray-800">Price</h3>
+                        <div class="flex items-center gap-2 mt-1">
+                          <span class="text-3xl font-bold text-teal-600">₹${medicine.price}</span>
+                          ${medicine.genericAvailable ? 
+                            `<span class="text-sm text-gray-500 line-through">₹${medicine.price * 1.5}</span>` : ''}
+                        </div>
+                        ${medicine.genericAvailable ? 
+                          `<p class="text-sm text-blue-600 mt-1">Generic from ₹${medicine.genericPrice}</p>` : ''}
+                      </div>
+                      <div class="flex items-center gap-4">
+                        <div class="flex items-center bg-gray-100 rounded-lg">
+                          <button class="popup-minus-btn px-3 py-2 text-gray-600 hover:text-teal-600 transition-all">
+                            <i class="material-icons text-sm">remove</i>
+                          </button>
+                          <span class="w-12 text-center">1</span>
+                          <button class="popup-plus-btn px-3 py-2 text-gray-600 hover:text-teal-600 transition-all">
+                            <i class="material-icons text-sm">add</i>
+                          </button>
+                        </div>
+                        <button class="popup-add-to-cart bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg transition-all duration-300 flex items-center gap-2">
+                          <i class="material-icons">add_shopping_cart</i>
+                          Add to Cart
+                        </button>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-4 text-sm text-gray-500">
+                      <div class="flex items-center">
+                        <i class="material-icons text-sm mr-1">verified</i>
+                        <span>Genuine Product</span>
+                      </div>
+                      <div class="flex items-center">
+                        <i class="material-icons text-sm mr-1">security</i>
+                        <span>Safe Delivery</span>
+                      </div>
+                      ${medicine.requiresPrescription ? `
+                        <div class="flex items-center text-yellow-600">
+                          <i class="material-icons text-sm mr-1">description</i>
+                          <span>Prescription Required</span>
+                        </div>
+                      ` : ''}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        // Attach popup quantity controls and add to cart
+        setTimeout(() => {
+          const minusBtn = popup.querySelector('.popup-minus-btn');
+          const plusBtn = popup.querySelector('.popup-plus-btn');
+          const qtySpan = popup.querySelector('.w-12.text-center');
+          let qty = 1;
+          minusBtn.addEventListener('click', (e) => { e.stopPropagation(); qty = Math.max(1, qty - 1); qtySpan.textContent = qty; });
+          plusBtn.addEventListener('click', (e) => { e.stopPropagation(); qty = qty + 1; qtySpan.textContent = qty; });
+          popup.querySelector('.popup-add-to-cart').addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.addToCart(medicine, qty);
+            popup.remove();
+          });
+        }, 0);
+        document.body.appendChild(popup);
+      }
+
+      clearError() {
+        const errorMessage = document.querySelector('.error-message');
+        if (errorMessage) errorMessage.remove();
+      }
+
+      handleError(error) {
+        showError('Unable to load medicines. Please try again later.');
+      }
+
+      getSimilarMedicines(medicine) {
+        return this.mockData
+          .filter(item => 
+            item.medicine.category === medicine.category && 
+            item.medicine._id !== medicine._id
+          )
+          .map(item => item.medicine)
+          .slice(0, 3);
+      }
+
+      updateStatistics() {
+        const totalMedicines = this.mockData.length;
+        const inStock = this.mockData.filter(item => item.status === 'IN_STOCK').length;
+        const lowStock = this.mockData.filter(item => item.status === 'LOW_STOCK').length;
+        const outOfStock = this.mockData.filter(item => item.status === 'OUT_OF_STOCK').length;
+        const highStock = this.mockData.filter(item => item.quantity > 50).length;
+        const mediumStock = this.mockData.filter(item => item.quantity > 20 && item.quantity <= 50).length;
+
+        // Update DOM elements
+        document.getElementById('totalMedicines').textContent = totalMedicines;
+        document.getElementById('lowStockItems').textContent = lowStock;
+        document.getElementById('outOfStock').textContent = outOfStock;
+        document.getElementById('highStock').textContent = highStock;
+        document.getElementById('mediumStock').textContent = mediumStock;
+        document.getElementById('lowStock').textContent = lowStock;
+      }
+    }
+
+    // Initialize the medicine display
+    const medicineDisplay = new MedicineDisplay();
+
+    function showLoading() {
+      document.getElementById('loadingState').classList.remove('hidden');
+      document.getElementById('errorState').classList.add('hidden');
+      document.getElementById('medicineGrid').classList.add('hidden');
+      
+      // Animate loading progress
+      const progressBar = document.getElementById('loadingProgress');
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress > 100) progress = 100;
+        progressBar.style.width = progress + '%';
+        if (progress >= 100) {
+          clearInterval(interval);
+        }
+      }, 200);
+    }
+
+    function hideLoading() {
+      // Complete the progress bar first
+      const progressBar = document.getElementById('loadingProgress');
+      progressBar.style.width = '100%';
+      
+      setTimeout(() => {
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('medicineGrid').classList.remove('hidden');
+      }, 500);
+    }
+
+    function showError(message) {
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('errorState').classList.remove('hidden');
+      document.getElementById('medicineGrid').classList.add('hidden');
+      document.getElementById('errorMessage').textContent = message;
+    }
+
+    function retryLoading() {
+      showLoading();
+      // Add your retry logic here
+      medicineDisplay.retryLoad();
+    }
+
+    // Missing utility functions
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `toast fixed top-4 right-4 z-50 px-6 py-4 rounded-lg text-white shadow-xl transform transition-all duration-300 ${type === 'error' ? 'bg-red-500' : 'bg-green-500'}`;
+      toast.innerHTML = `
+        <div class="flex items-center gap-3">
+          <i class="material-icons">${type === 'error' ? 'error' : 'check_circle'}</i>
+          <span>${message}</span>
+        </div>
+      `;
+      document.body.appendChild(toast);
+      
+      // Animate in
+      setTimeout(() => toast.style.transform = 'translateX(0)', 10);
+      
+      // Animate out and remove
+      setTimeout(() => {
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    function showPrescriptionPopup(medicineName, callback) {
+      const popup = document.createElement('div');
+      popup.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+      popup.innerHTML = `
+        <div class="bg-white rounded-xl max-w-md w-full p-6">
+          <div class="text-center mb-6">
+            <i class="material-icons text-yellow-500 text-6xl mb-4">description</i>
+            <h2 class="text-xl font-semibold mb-2">Prescription Required</h2>
+            <p class="text-gray-600">${medicineName} requires a valid prescription. Please upload your prescription to proceed.</p>
+          </div>
+          
+          <div class="space-y-4">
+            <button onclick="uploadPrescription('${medicineName}', ${callback})" 
+                    class="w-full bg-teal-500 hover:bg-teal-600 text-white px-4 py-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-2">
+              <i class="material-icons">upload</i>
+              Upload Prescription
+            </button>
+            <button onclick="this.closest('.fixed').remove()" 
+                    class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-3 rounded-lg transition-all duration-300">
+              Cancel
+            </button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(popup);
+    }
+
+    function uploadPrescription(medicineName, callback) {
+      // Simulate prescription upload
+      showToast('Prescription uploaded successfully!');
+      document.querySelector('.fixed').remove();
+      callback();
+    }
+
+    function toggleSort() {
+      const dropdown = document.getElementById('sortDropdown');
+      dropdown.classList.toggle('hidden');
+    }
+
+    function toggleFilters() {
+      const sidebar = document.getElementById('filterSidebar');
+      sidebar.classList.toggle('hidden');
+    }
+
+    function clearFilters() {
+      // Reset all checkboxes
+      document.querySelectorAll('#filterSidebar input[type="checkbox"]').forEach(checkbox => {
+        checkbox.checked = false;
+      });
+
+      // Reset price slider
+      const priceSlider = document.querySelector('.price-slider');
+      if (priceSlider) {
+        priceSlider.value = priceSlider.max;
+        document.getElementById('priceValue').textContent = `₹${priceSlider.value}`;
+      }
+
+      // Reset search input
+      const searchInput = document.querySelector('input[type="text"]');
+      if (searchInput) {
+        searchInput.value = '';
+      }
+
+      // Reset sort dropdown
+      const sortDropdown = document.getElementById('sortDropdown');
+      if (sortDropdown) {
+        sortDropdown.classList.add('hidden');
+      }
+
+      // Refresh the medicine display
+      medicineDisplay.filterAndSortMedicines();
+      
+      // Show success message
+      showToast('Filters cleared successfully');
+    }
+
+    // Update price slider display
+    document.addEventListener('DOMContentLoaded', () => {
+      const priceSlider = document.querySelector('.price-slider');
+      if (priceSlider) {
+        priceSlider.addEventListener('input', (e) => {
+          document.getElementById('priceValue').textContent = `₹${e.target.value}`;
+        });
+      }
+      
+      // Initialize cart badge
+      updateCartBadge();
+    });
+
+    function goToCart() {
+      if (cartItems.length === 0) {
+        showToast('Your cart is empty. Add some medicines first!', 'error');
+        return;
+      }
+      // Navigate to cart page
+      window.location.href = 'cart.html';
+    }
+
+    // Voice Assistant Implementation
+    class MedicalVoiceAssistant {
+      constructor() {
+        this.isListening = false;
+        this.recognition = null;
+        this.synthesis = window.speechSynthesis;
+        this.currentResponse = '';
+        this.medicalKnowledgeBase = this.initializeMedicalKB();
+        this.initializeSpeechRecognition();
+      }
+
+      initializeSpeechRecognition() {
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+          const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+          this.recognition = new SpeechRecognition();
+          this.recognition.continuous = false;
+          this.recognition.interimResults = true;
+          this.recognition.lang = 'en-US';
+
+          this.recognition.onstart = () => {
+            this.isListening = true;
+            this.updateListeningUI(true);
+          };
+
+          this.recognition.onresult = (event) => {
+            let transcript = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              transcript += event.results[i][0].transcript;
+            }
+            this.updateTranscription(transcript);
+            
+            if (event.results[event.results.length - 1].isFinal) {
+              this.processQuery(transcript);
+            }
+          };
+
+          this.recognition.onerror = (event) => {
+            console.error('Speech recognition error:', event.error);
+            this.handleSpeechError(event.error);
+          };
+
+          this.recognition.onend = () => {
+            this.isListening = false;
+            this.updateListeningUI(false);
+          };
+        } else {
+          console.warn('Speech recognition not supported');
+        }
+      }
+
+      initializeMedicalKB() {
+        return {
+          'paracetamol': {
+            uses: 'Pain relief, fever reduction, headaches, muscle aches',
+            dosage: 'Adults: 500-1000mg every 4-6 hours, maximum 4g daily',
+            sideEffects: 'Rare: liver damage with overdose, skin rash, nausea',
+            warnings: 'Do not exceed recommended dose. Avoid alcohol. Consult doctor if symptoms persist.',
+            category: 'Pain Relief'
+          },
+          'ibuprofen': {
+            uses: 'Pain relief, inflammation reduction, fever reduction',
+            dosage: 'Adults: 200-400mg every 4-6 hours, maximum 1.2g daily',
+            sideEffects: 'Stomach upset, heartburn, dizziness, increased bleeding risk',
+            warnings: 'Take with food. Not suitable for stomach ulcer patients. Avoid if allergic to aspirin.',
+            category: 'Anti-inflammatory'
+          },
+          'aspirin': {
+            uses: 'Pain relief, fever reduction, heart attack prevention, blood thinning',
+            dosage: 'Pain relief: 300-900mg every 4-6 hours. Heart protection: 75mg daily',
+            sideEffects: 'Stomach irritation, increased bleeding risk, tinnitus',
+            warnings: 'Not for children under 16. Take with food. Monitor for bleeding.',
+            category: 'Heart Health'
+          },
+          'cetirizine': {
+            uses: 'Allergy relief, hay fever, urticaria, itching',
+            dosage: 'Adults: 10mg once daily. Children 6-12: 5mg once daily',
+            sideEffects: 'Drowsiness, dry mouth, fatigue, headache',
+            warnings: 'May cause drowsiness. Avoid alcohol. Reduce dose in kidney problems.',
+            category: 'Allergy Relief'
+          },
+          'omeprazole': {
+            uses: 'Acid reflux, stomach ulcers, heartburn, GERD',
+            dosage: 'Adults: 20-40mg once daily, preferably morning before food',
+            sideEffects: 'Headache, stomach pain, nausea, diarrhea',
+            warnings: 'Take on empty stomach. Complete prescribed course. May affect vitamin B12 absorption.',
+            category: 'Acid Reflux'
+          },
+          'metformin': {
+            uses: 'Type 2 diabetes blood sugar control',
+            dosage: 'Starting: 500mg twice daily with meals. Maximum: 2g daily',
+            sideEffects: 'Nausea, diarrhea, stomach upset, metallic taste',
+            warnings: 'Prescription only. Regular blood sugar monitoring required. Avoid alcohol.',
+            category: 'Diabetes Care'
+          }
+        };
+      }
+
+      async processQuery(transcript) {
+        try {
+          // Clean and normalize the transcript
+          const cleanQuery = this.cleanQuery(transcript);
+          
+          // Try to use backend API first, fallback to local processing
+          try {
+            const response = await fetch('http://localhost:5000/api/medical-query', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ query: cleanQuery })
+            });
+            
+            if (response.ok) {
+              const data = await response.json();
+              
+              // Check for emergency response
+              if (data.analysis.safety_flags && data.analysis.safety_flags.length > 0) {
+                this.displayResponse({
+                  text: data.response.text,
+                  type: 'emergency'
+                });
+                return;
+              }
+              
+              // Display enhanced response from backend
+              this.displayResponse({
+                text: data.response.text,
+                type: data.response.type,
+                confidence: data.response.confidence,
+                warnings: data.response.warnings
+              });
+              return;
+            }
+          } catch (backendError) {
+            console.warn('Backend API unavailable, using local processing:', backendError);
+          }
+          
+          // Fallback to local processing
+          const analysis = this.analyzeQuery(cleanQuery);
+          const response = await this.generateMedicalResponse(analysis);
+          this.displayResponse(response);
+          
+        } catch (error) {
+          console.error('Error processing query:', error);
+          this.displayResponse({
+            text: "I'm sorry, I encountered an error processing your question. Please try again or consult a healthcare professional.",
+            type: 'error'
+          });
+        }
+      }
+
+      cleanQuery(query) {
+        // Remove filler words and normalize medical terms
+        const fillerWords = ['um', 'uh', 'like', 'you know', 'well'];
+        const words = query.toLowerCase().split(' ');
+        const cleanWords = words.filter(word => !fillerWords.includes(word));
+        
+        // Medical term corrections
+        const corrections = {
+          'panadol': 'paracetamol',
+          'tylenol': 'paracetamol',
+          'advil': 'ibuprofen',
+          'motrin': 'ibuprofen',
+          'bayer': 'aspirin',
+          'zyrtec': 'cetirizine',
+          'prilosec': 'omeprazole'
+        };
+        
+        return cleanWords.map(word => corrections[word] || word).join(' ');
+      }
+
+      analyzeQuery(query) {
+        const analysis = {
+          intent: 'general',
+          medicine: null,
+          queryType: 'general',
+          keywords: []
+        };
+
+        // Extract medicine names
+        for (const [medicine, data] of Object.entries(this.medicalKnowledgeBase)) {
+          if (query.includes(medicine)) {
+            analysis.medicine = medicine;
+            break;
+          }
+        }
+
+        // Determine query type
+        if (query.includes('side effect') || query.includes('adverse')) {
+          analysis.queryType = 'sideEffects';
+        } else if (query.includes('dosage') || query.includes('dose') || query.includes('how much')) {
+          analysis.queryType = 'dosage';
+        } else if (query.includes('use') || query.includes('for') || query.includes('treat')) {
+          analysis.queryType = 'uses';
+        } else if (query.includes('warning') || query.includes('caution') || query.includes('safe')) {
+          analysis.queryType = 'warnings';
+        }
+
+        // Extract symptoms for medicine recommendations
+        const symptoms = ['pain', 'headache', 'fever', 'allergy', 'heartburn', 'diabetes'];
+        analysis.keywords = symptoms.filter(symptom => query.includes(symptom));
+
+        return analysis;
+      }
+
+      async generateMedicalResponse(analysis) {
+        let responseText = '';
+        let responseType = 'info';
+
+        if (analysis.medicine && this.medicalKnowledgeBase[analysis.medicine]) {
+          const medicineData = this.medicalKnowledgeBase[analysis.medicine];
+          const medicineName = analysis.medicine.charAt(0).toUpperCase() + analysis.medicine.slice(1);
+
+          switch (analysis.queryType) {
+            case 'uses':
+              responseText = `${medicineName} is commonly used for ${medicineData.uses}. It belongs to the ${medicineData.category} category.`;
+              break;
+            case 'dosage':
+              responseText = `For ${medicineName}, the typical dosage is: ${medicineData.dosage}. Always follow your doctor's instructions or the package directions.`;
+              break;
+            case 'sideEffects':
+              responseText = `Possible side effects of ${medicineName} include: ${medicineData.sideEffects}. If you experience any severe side effects, contact your healthcare provider immediately.`;
+              responseType = 'warning';
+              break;
+            case 'warnings':
+              responseText = `Important warnings for ${medicineName}: ${medicineData.warnings}`;
+              responseType = 'warning';
+              break;
+            default:
+              responseText = `${medicineName} is used for ${medicineData.uses}. The typical dosage is ${medicineData.dosage}. Please note: ${medicineData.warnings}`;
+          }
+        } else if (analysis.keywords.length > 0) {
+          // Recommend medicines based on symptoms
+          responseText = this.recommendMedicineForSymptoms(analysis.keywords);
+        } else {
+          // General medical advice
+          responseText = "I can help you with information about medicines like paracetamol, ibuprofen, aspirin, cetirizine, omeprazole, and metformin. You can ask about their uses, dosages, side effects, or warnings. What would you like to know?";
+        }
+
+        // Add medical disclaimer
+        responseText += "\n\nPlease remember: This information is for educational purposes only and is not a substitute for professional medical advice. Always consult with a healthcare provider for medical concerns.";
+
+        return {
+          text: responseText,
+          type: responseType
+        };
+      }
+
+      recommendMedicineForSymptoms(symptoms) {
+        const recommendations = {
+          'pain': 'For general pain relief, paracetamol or ibuprofen are commonly used options.',
+          'headache': 'Paracetamol or ibuprofen can help with headaches.',
+          'fever': 'Paracetamol or ibuprofen are effective for reducing fever.',
+          'allergy': 'Cetirizine is an antihistamine that can help with allergy symptoms.',
+          'heartburn': 'Omeprazole can help reduce stomach acid and treat heartburn.',
+          'diabetes': 'Metformin is commonly prescribed for type 2 diabetes, but requires a prescription.'
+        };
+
+        let response = 'Based on your symptoms, here are some options:\n\n';
+        symptoms.forEach(symptom => {
+          if (recommendations[symptom]) {
+            response += `• ${recommendations[symptom]}\n`;
+          }
+        });
+
+        return response;
+      }
+
+      updateListeningUI(isListening) {
+        const micIcon = document.getElementById('micIcon');
+        const status = document.getElementById('listeningStatus');
+        const visualizer = document.getElementById('audioVisualizer');
+        const btn = document.getElementById('startListeningBtn');
+
+        if (isListening) {
+          micIcon.textContent = 'mic_off';
+          status.textContent = 'Listening... Click to stop';
+          visualizer.classList.remove('hidden');
+          btn.classList.add('animate-pulse');
+        } else {
+          micIcon.textContent = 'mic';
+          status.textContent = 'Click to start speaking';
+          visualizer.classList.add('hidden');
+          btn.classList.remove('animate-pulse');
+        }
+      }
+
+      updateTranscription(text) {
+        document.getElementById('transcriptionDisplay').textContent = text;
+      }
+
+      displayResponse(response) {
+        const responseContent = document.getElementById('responseContent');
+        const responseActions = document.getElementById('responseActions');
+        
+        responseContent.innerHTML = response.text.replace(/\n/g, '<br>');
+        responseContent.classList.remove('italic', 'text-gray-600');
+        responseContent.classList.add('text-gray-800');
+        
+        this.currentResponse = response.text;
+        responseActions.classList.remove('hidden');
+
+        // Add appropriate styling based on response type
+        const responseDisplay = document.getElementById('aiResponseDisplay');
+        responseDisplay.className = 'rounded-lg p-4 min-h-[100px]';
+        
+        if (response.type === 'warning') {
+          responseDisplay.classList.add('bg-gradient-to-r', 'from-yellow-50', 'to-orange-50', 'border', 'border-yellow-200');
+        } else {
+          responseDisplay.classList.add('bg-gradient-to-r', 'from-teal-50', 'to-green-50');
+        }
+      }
+
+      handleSpeechError(error) {
+        let errorMessage = 'Speech recognition error occurred. ';
+        switch (error) {
+          case 'no-speech':
+            errorMessage += 'No speech was detected. Please try again.';
+            break;
+          case 'audio-capture':
+            errorMessage += 'Microphone access denied or not available.';
+            break;
+          case 'not-allowed':
+            errorMessage += 'Microphone permission denied. Please allow microphone access.';
+            break;
+          default:
+            errorMessage += 'Please try again.';
+        }
+        
+        document.getElementById('transcriptionDisplay').textContent = errorMessage;
+        this.updateListeningUI(false);
+      }
+
+      speak(text) {
+        if (this.synthesis.speaking) {
+          this.synthesis.cancel();
+        }
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        utterance.volume = 0.8;
+        
+        // Try to use a more natural voice
+        const voices = this.synthesis.getVoices();
+        const preferredVoice = voices.find(voice => 
+          voice.name.includes('Google') || 
+          voice.name.includes('Microsoft') ||
+          voice.lang.includes('en')
+        );
+        
+        if (preferredVoice) {
+          utterance.voice = preferredVoice;
+        }
+
+        this.synthesis.speak(utterance);
+      }
+    }
+
+    // Initialize voice assistant
+    const voiceAssistant = new MedicalVoiceAssistant();
+
+    // Voice Assistant Functions
+    function toggleVoiceAssistant() {
+      const modal = document.getElementById('voiceAssistantModal');
+      modal.classList.toggle('hidden');
+    }
+
+    function closeVoiceAssistant() {
+      const modal = document.getElementById('voiceAssistantModal');
+      modal.classList.add('hidden');
+      if (voiceAssistant.isListening) {
+        voiceAssistant.recognition.stop();
+      }
+    }
+
+    function startListening() {
+      if (!voiceAssistant.recognition) {
+        showToast('Speech recognition not supported in this browser', 'error');
+        return;
+      }
+
+      if (voiceAssistant.isListening) {
+        voiceAssistant.recognition.stop();
+      } else {
+        voiceAssistant.recognition.start();
+      }
+    }
+
+    function askQuickQuestion(question) {
+      document.getElementById('transcriptionDisplay').textContent = question;
+      voiceAssistant.processQuery(question);
+    }
+
+    function speakResponse() {
+      if (voiceAssistant.currentResponse) {
+        voiceAssistant.speak(voiceAssistant.currentResponse);
+      }
+    }
+
+    function copyResponse() {
+      if (voiceAssistant.currentResponse) {
+        navigator.clipboard.writeText(voiceAssistant.currentResponse).then(() => {
+          showToast('Response copied to clipboard!');
+        }).catch(() => {
+          showToast('Failed to copy response', 'error');
+        });
+      }
+    }
+  </script>
+</body>
+</html>

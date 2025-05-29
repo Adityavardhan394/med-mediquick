@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teleconsultation - MediQuick</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="js/theme.js"></script>
+    <script src="https://cdn.agora.io/sdk/release/AgoraRTCSDK-3.6.11.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+    <style>
+        :root {
+            --primary: #00b386;
+            --primary-dark: #009973;
+            --primary-light: rgba(0, 179, 134, 0.1);
+            --secondary: #4a90e2;
+            --text-dark: #2c3e50;
+            --text-light: #718096;
+            --background: #f8fafb;
+            --white: #ffffff;
+            --shadow: 0 2px 8px rgba(0,0,0,0.1);
+            --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', Arial, sans-serif;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--text-dark);
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(0, 179, 134, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 179, 134, 0.08) 0%, transparent 50%),
+                linear-gradient(135deg, rgba(0, 179, 134, 0.05) 0%, rgba(0, 179, 134, 0.02) 100%);
+            background-attachment: fixed;
+        }
+
+        /* Enhanced Background with Logo Pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('assets/logo.svg');
+            background-size: 200px;
+            background-repeat: space;
+            opacity: 0.02;
+            z-index: -1;
+            animation: rotateBg 120s linear infinite;
+        }
+
+        @keyframes rotateBg {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .consultation-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        .back-button {
+            position: fixed;
+            left: 20px;
+            top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: var(--primary);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0, 179, 134, 0.2);
+            text-decoration: none;
+            font-size: 15px;
+            font-family: inherit;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .back-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        .back-button:hover::before {
+            left: 100%;
+        }
+
+        .back-button:hover {
+            transform: translateX(-5px);
+            background: var(--primary-dark);
+            box-shadow: 0 6px 16px rgba(0, 179, 134, 0.3);
+        }
+
+        .back-button i {
+            font-size: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .back-button:hover i {
+            transform: translateX(-5px);
+        }
+
+        .back-button span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .consultation-header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+            padding: 20px;
+            background: var(--white);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .consultation-header:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 179, 134, 0.15);
+        }
+
+        .consultation-header h1 {
+            font-size: 36px;
+            color: var(--primary);
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .consultation-header p {
+            color: var(--text-light);
+            font-size: 18px;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .consultation-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 32px;
+            margin-top: 32px;
+        }
+
+        .doctors-list {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            height: fit-content;
+            border: 1px solid rgba(0, 179, 134, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .doctors-list:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 179, 134, 0.15);
+        }
+
+        .doctors-list h2 {
+            font-size: 24px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--primary-light);
+            color: var(--text-dark);
+        }
+
+        .doctor-card {
+            padding: 20px;
+            border-radius: 16px;
+            border: 2px solid transparent;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--white);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .doctor-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gradient);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 0;
+        }
+
+        .doctor-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 24px rgba(0, 179, 134, 0.15);
+            border-color: var(--primary);
+        }
+
+        .doctor-card.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            transform: scale(1.02);
+        }
+
+        .doctor-info {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .doctor-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--white);
+            box-shadow: 0 4px 12px rgba(0, 179, 134, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .doctor-card:hover .doctor-avatar {
+            transform: scale(1.1);
+            border-color: var(--primary);
+        }
+
+        .doctor-details h3 {
+            font-size: 20px;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .doctor-details p {
+            color: var(--text-light);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .doctor-speciality {
+            display: inline-block;
+            padding: 6px 16px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .doctor-card:hover .doctor-speciality {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .booking-section {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0, 179, 134, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .booking-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 179, 134, 0.15);
+        }
+
+        .booking-section h2 {
+            font-size: 24px;
+            margin-bottom: 24px;
+            color: var(--text-dark);
+        }
+
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .time-slot {
+            padding: 12px;
+            text-align: center;
+            border-radius: 12px;
+            border: 2px solid rgba(0, 179, 134, 0.1);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .time-slot::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gradient);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 0;
+        }
+
+        .time-slot:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(0, 179, 134, 0.1);
+        }
+
+        .time-slot.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 179, 134, 0.2);
+        }
+
+        .consultation-actions {
+            margin-top: 32px;
+            display: flex;
+            gap: 16px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 179, 134, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            background: var(--primary-dark);
+            box-shadow: 0 8px 24px rgba(0, 179, 134, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 179, 134, 0.2);
+        }
+
+        /* Keep existing video container and chat container styles */
+        .video-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .video-container.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            width: 100%;
+            max-width: 1200px;
+            padding: 24px;
+        }
+
+        .video-participant {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 aspect ratio */
+            background: #1a1a1a;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .video-participant video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-controls {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 16px;
+            background: rgba(0, 179, 134, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .control-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .control-btn.end-call {
+            background: var(--error);
+        }
+
+        .control-btn.end-call:hover {
+            background: #dc2626;
+            transform: scale(1.1);
+        }
+
+        .chat-container {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            width: 320px;
+            height: 480px;
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 179, 134, 0.2);
+            border: 1px solid rgba(0, 179, 134, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 100;
+        }
+
+        .chat-header {
+            padding: 16px;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .chat-input {
+            padding: 16px;
+            border-top: 1px solid rgba(0, 179, 134, 0.1);
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 1px solid rgba(0, 179, 134, 0.2);
+            border-radius: 20px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 179, 134, 0.1);
+        }
+
+        .chat-input button {
+            padding: 8px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input button:hover {
+            background: var(--primary-dark);
+            transform: scale(1.1);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .message {
+            padding: 12px 16px;
+            margin: 8px 0;
+            border-radius: 12px;
+            max-width: 80%;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        .message.user {
+            background: var(--primary-light);
+            color: var(--primary);
+            margin-left: auto;
+        }
+
+        .message.doctor {
+            background: var(--white);
+            border: 1px solid rgba(0, 179, 134, 0.1);
+            margin-right: auto;
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 4px;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .consultation-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .consultation-header h1 {
+                font-size: 28px;
+            }
+
+            .doctor-card {
+                padding: 16px;
+            }
+
+            .doctor-avatar {
+                width: 60px;
+                height: 60px;
+            }
+
+            .booking-section {
+                padding: 20px;
+            }
+
+            .time-slots {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+                gap: 12px;
+            }
+
+            .btn {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+
+            .chat-container {
+                width: 100%;
+                height: 100%;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                border-radius: 0;
+            }
+
+            .back-button {
+                padding: 10px 20px;
+                font-size: 14px;
+                left: 16px;
+                top: 16px;
+            }
+
+            .back-button i {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <!-- Same navigation as dashboard.html -->
+    </nav>
+
+    <main class="consultation-container">
+        <a href="dashboard.html" class="back-button" id="backButton" style="z-index: 1000;">
+            <i class="material-icons">arrow_back</i>
+            <span>Back to Dashboard</span>
+        </a>
+        
+        <div class="consultation-header">
+            <h1>Book a Teleconsultation</h1>
+            <p>Connect with our experienced doctors from the comfort of your home</p>
+        </div>
+
+        <div class="consultation-grid">
+            <div class="doctors-list">
+                <h2>Available Doctors</h2>
+                <!-- Doctor cards will be populated dynamically -->
+            </div>
+
+            <div class="booking-section">
+                <h2>Select Time Slot</h2>
+                <div class="time-slots">
+                    <!-- Time slots will be populated dynamically -->
+                </div>
+
+                <div class="consultation-actions">
+                    <button class="btn btn-primary" onclick="bookConsultation()">Book Consultation</button>
+                    <button class="btn btn-secondary" onclick="startDemo()">Try Demo Call</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="video-container" id="videoContainer">
+            <div class="video-grid">
+                <div class="video-participant" id="localStream"></div>
+                <div class="video-participant" id="remoteStream"></div>
+            </div>
+            <div class="video-controls">
+                <button class="control-btn" onclick="toggleAudio()">
+                    <i class="material-icons">mic</i>
+                </button>
+                <button class="control-btn" onclick="toggleVideo()">
+                    <i class="material-icons">videocam</i>
+                </button>
+                <button class="control-btn end-call" onclick="endCall()">
+                    <i class="material-icons">call_end</i>
+                </button>
+            </div>
+        </div>
+
+        <div class="chat-container" id="chatContainer" style="display: none;">
+            <div class="chat-header">
+                <h3>Chat with Doctor</h3>
+                <button class="control-btn" onclick="toggleChat()">
+                    <i class="material-icons">close</i>
+                </button>
+            </div>
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-input">
+                <input type="text" placeholder="Type your message..." id="messageInput">
+                <button onclick="sendMessage()">
+                    <i class="material-icons">send</i>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Simple back button functionality
+        const backButton = document.getElementById('backButton');
+        if (backButton) {
+            backButton.onclick = function(e) {
+                e.preventDefault();
+                window.location.href = 'dashboard.html';
+            }
+        }
+
+        // Sample doctor data - In production, this would come from your backend
+        const doctors = [
+            {
+                id: 1,
+                name: "Dr. Sarah Johnson",
+                speciality: "General Physician",
+                experience: "10 years",
+                avatar: "https://ui-avatars.com/api/?name=Sarah+Johnson&background=0D8ABC&color=fff"
+            },
+            {
+                id: 2,
+                name: "Dr. Michael Chen",
+                speciality: "Cardiologist",
+                experience: "15 years",
+                avatar: "https://ui-avatars.com/api/?name=Michael+Chen&background=0D8ABC&color=fff"
+            },
+            {
+                id: 3,
+                name: "Dr. Emily Williams",
+                speciality: "Pediatrician",
+                experience: "8 years",
+                avatar: "https://ui-avatars.com/api/?name=Emily+Williams&background=0D8ABC&color=fff"
+            }
+        ];
+
+        // Initialize Agora client
+        const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+        let localAudioTrack, localVideoTrack;
+        let isAudioMuted = false;
+        let isVideoMuted = false;
+
+        // Initialize Socket.IO
+        const socket = io('http://localhost:3000');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            populateDoctors();
+            generateTimeSlots();
+            initializeSocketListeners();
+        });
+
+        function populateDoctors() {
+            const doctorsList = document.querySelector('.doctors-list');
+            doctors.forEach(doctor => {
+                const doctorCard = document.createElement('div');
+                doctorCard.className = 'doctor-card';
+                doctorCard.onclick = () => selectDoctor(doctor.id);
+                doctorCard.innerHTML = `
+                    <div class="doctor-info">
+                        <img src="${doctor.avatar}" alt="${doctor.name}" class="doctor-avatar">
+                        <div class="doctor-details">
+                            <h3>${doctor.name}</h3>
+                            <p>${doctor.experience} experience</p>
+                            <span class="doctor-speciality">${doctor.speciality}</span>
+                        </div>
+                    </div>
+                `;
+                doctorsList.appendChild(doctorCard);
+            });
+        }
+
+        function generateTimeSlots() {
+            const timeSlots = document.querySelector('.time-slots');
+            const now = new Date();
+            const startHour = 9;
+            const endHour = 17;
+
+            for (let hour = startHour; hour <= endHour; hour++) {
+                for (let minute of ['00', '30']) {
+                    const timeSlot = document.createElement('div');
+                    timeSlot.className = 'time-slot';
+                    const time = `${hour}:${minute}`;
+                    timeSlot.textContent = time;
+                    timeSlot.onclick = () => selectTimeSlot(time);
+                    timeSlots.appendChild(timeSlot);
+                }
+            }
+        }
+
+        function selectDoctor(doctorId) {
+            document.querySelectorAll('.doctor-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            const selectedCard = document.querySelector(`.doctor-card:nth-child(${doctorId})`);
+            selectedCard.classList.add('selected');
+        }
+
+        function selectTimeSlot(time) {
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.remove('selected');
+            });
+            const selectedSlot = Array.from(document.querySelectorAll('.time-slot'))
+                .find(slot => slot.textContent === time);
+            selectedSlot.classList.add('selected');
+        }
+
+        async function bookConsultation() {
+            const selectedDoctor = document.querySelector('.doctor-card.selected');
+            const selectedTime = document.querySelector('.time-slot.selected');
+
+            if (!selectedDoctor || !selectedTime) {
+                alert('Please select both a doctor and a time slot');
+                return;
+            }
+
+            // In production, this would make an API call to your backend
+            alert('Consultation booked successfully! You will receive a confirmation email shortly.');
+        }
+
+        async function startDemo() {
+            try {
+                document.getElementById('videoContainer').classList.add('active');
+                document.getElementById('chatContainer').style.display = 'flex';
+
+                // Initialize Agora client
+                await client.join('your-app-id', 'demo-channel', null, null);
+                
+                // Create local tracks
+                [localAudioTrack, localVideoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+                
+                // Play local video
+                localVideoTrack.play('localStream');
+                
+                // Publish local tracks
+                await client.publish([localAudioTrack, localVideoTrack]);
+                
+                // Listen for remote users
+                client.on('user-published', async (user, mediaType) => {
+                    await client.subscribe(user, mediaType);
+                    if (mediaType === 'video') {
+                        user.videoTrack.play('remoteStream');
+                    }
+                    if (mediaType === 'audio') {
+                        user.audioTrack.play();
+                    }
+                });
+            } catch (error) {
+                console.error('Error starting video call:', error);
+                alert('Failed to start video call. Please check your camera and microphone permissions.');
+            }
+        }
+
+        function toggleAudio() {
+            if (localAudioTrack) {
+                isAudioMuted = !isAudioMuted;
+                localAudioTrack.setEnabled(!isAudioMuted);
+                const micIcon = document.querySelector('.control-btn i');
+                micIcon.textContent = isAudioMuted ? 'mic_off' : 'mic';
+            }
+        }
+
+        function toggleVideo() {
+            if (localVideoTrack) {
+                isVideoMuted = !isVideoMuted;
+                localVideoTrack.setEnabled(!isVideoMuted);
+                const videoIcon = document.querySelector('.control-btn:nth-child(2) i');
+                videoIcon.textContent = isVideoMuted ? 'videocam_off' : 'videocam';
+            }
+        }
+
+        async function endCall() {
+            // Clean up tracks
+            if (localAudioTrack) {
+                localAudioTrack.close();
+            }
+            if (localVideoTrack) {
+                localVideoTrack.close();
+            }
+
+            // Leave the channel
+            await client.leave();
+
+            // Reset UI
+            document.getElementById('videoContainer').classList.remove('active');
+            document.getElementById('chatContainer').style.display = 'none';
+        }
+
+        function toggleChat() {
+            const chatContainer = document.getElementById('chatContainer');
+            chatContainer.style.display = chatContainer.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        function initializeSocketListeners() {
+            socket.on('connect', () => {
+                console.log('Connected to chat server');
+            });
+
+            socket.on('message', (message) => {
+                appendMessage(message);
+            });
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                socket.emit('message', {
+                    text: message,
+                    sender: 'user',
+                    timestamp: new Date().toISOString()
+                });
+                
+                appendMessage({
+                    text: message,
+                    sender: 'user',
+                    timestamp: new Date().toISOString()
+                });
+                
+                input.value = '';
+            }
+        }
+
+        function appendMessage(message) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${message.sender}`;
+            messageElement.innerHTML = `
+                <p>${message.text}</p>
+                <span class="timestamp">${new Date(message.timestamp).toLocaleTimeString()}</span>
+            `;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#00b386"/>
+  <meta name="description" content="MediQuick - Medicine delivery in 10 minutes"/>
+  <title>MediQuick - Fast Medicine Delivery</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/favicon.png"/>
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png"/>
+  
+  <!-- PWA manifest -->
+  <link rel="manifest" href="manifest.json"/>
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/styles.css"/>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+  
+  <!-- Google Sign-In -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  
+  <!-- Apple Sign-In -->
+  <script type="text/javascript" src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"></script>
+  
+  <!-- iOS specific -->
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+
+  <style>
+    :root {
+      --primary: #00b386;
+      --primary-dark: #009973;
+      --primary-light: rgba(0, 179, 134, 0.1);
+      --secondary: #4a90e2;
+      --text-dark: #2c3e50;
+      --text-light: #666;
+      --background: #f8fafb;
+      --white: #ffffff;
+      --shadow: 0 8px 30px rgba(0,0,0,0.05);
+      --shadow-hover: 0 15px 40px rgba(0,0,0,0.1);
+      --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+
+    body {
+      background: var(--background);
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+      perspective: 1000px;
+    }
+
+    /* Enhanced Background Animation */
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      z-index: -1;
+      filter: blur(150px);
+      opacity: 0.15;
+      animation: floatAndRotate 15s infinite ease-in-out;
+    }
+
+    body::before {
+      background: var(--primary);
+      top: -200px;
+      left: -200px;
+      transform-origin: bottom right;
+    }
+
+    body::after {
+      background: var(--secondary);
+      bottom: -200px;
+      right: -200px;
+      animation-delay: -7.5s;
+      transform-origin: top left;
+    }
+
+    @keyframes floatAndRotate {
+      0%, 100% { 
+        transform: translate(0, 0) rotate(0deg) scale(1); 
+      }
+      25% { 
+        transform: translate(50px, 50px) rotate(90deg) scale(1.1); 
+      }
+      50% { 
+        transform: translate(0, 100px) rotate(180deg) scale(1); 
+      }
+      75% { 
+        transform: translate(-50px, 50px) rotate(270deg) scale(0.9); 
+      }
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 420px;
+      position: relative;
+      transform-style: preserve-3d;
+      animation: containerEntrance 1.5s ease-out forwards;
+    }
+
+    @keyframes containerEntrance {
+      0% {
+        transform: translateZ(-1000px) rotateY(30deg);
+        opacity: 0;
+      }
+      100% {
+        transform: translateZ(0) rotateY(0);
+        opacity: 1;
+      }
+    }
+
+    .logo-container {
+      text-align: center;
+      margin-bottom: 32px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .app-logo {
+      width: 120px;
+      height: 120px;
+      margin-bottom: 16px;
+      filter: drop-shadow(0 8px 16px rgba(0, 179, 134, 0.2));
+      animation: logoFloat 6s infinite ease-in-out;
+      transform-style: preserve-3d;
+    }
+
+    @keyframes logoFloat {
+      0%, 100% { 
+        transform: translateY(0) rotateY(0); 
+      }
+      25% { 
+        transform: translateY(-10px) rotateY(5deg); 
+      }
+      50% { 
+        transform: translateY(0) rotateY(0); 
+      }
+      75% { 
+        transform: translateY(10px) rotateY(-5deg); 
+      }
+    }
+
+    .logo-title {
+      font-size: 36px;
+      font-weight: 800;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0;
+      letter-spacing: -0.5px;
+      position: relative;
+      animation: titleGlow 3s infinite alternate;
+    }
+
+    @keyframes titleGlow {
+      0% {
+        text-shadow: 0 0 10px rgba(0, 179, 134, 0.2);
+      }
+      100% {
+        text-shadow: 0 0 20px rgba(0, 179, 134, 0.4);
+      }
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: var(--text-light);
+      margin: 8px 0 0;
+      letter-spacing: 0.2px;
+    }
+
+    .login-card {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 40px 32px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      transform-style: preserve-3d;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .login-card:hover {
+      transform: translateY(-5px) scale(1.01);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--gradient);
+      animation: gradientShift 3s infinite linear;
+      background-size: 200% 100%;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 100% 0; }
+      100% { background-position: -100% 0; }
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .card-header i {
+      font-size: 32px;
+      color: var(--primary);
+      background: var(--primary-light);
+      padding: 12px;
+      border-radius: 16px;
+    }
+
+    .card-header span {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-dark);
+      letter-spacing: -0.5px;
+    }
+
+    .login-text {
+      color: var(--text-light);
+      margin-bottom: 24px;
+      font-size: 15px;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 24px;
+      perspective: 1000px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 16px 16px 16px 48px;
+      border: 2px solid #eef2f7;
+      border-radius: 16px;
+      font-size: 16px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      background: #f8fafb;
+      color: var(--text-dark);
+      transform-style: preserve-3d;
+    }
+
+    .input-group input:focus {
+      border-color: var(--primary);
+      background: var(--white);
+      box-shadow: 0 0 0 4px var(--primary-light);
+      transform: translateZ(10px);
+    }
+
+    .input-group i {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+    }
+
+    .input-group input:focus + i {
+      color: var(--primary);
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    .primary-button {
+      width: 100%;
+      padding: 16px;
+      background: var(--gradient);
+      color: var(--white);
+      border: none;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      transform-style: preserve-3d;
+    }
+
+    .primary-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+      );
+      transition: left 0.7s;
+    }
+
+    .primary-button:hover {
+      transform: translateY(-2px) translateZ(20px);
+      box-shadow: 0 20px 40px rgba(0, 179, 134, 0.3);
+    }
+
+    .primary-button:hover::before {
+      left: 100%;
+    }
+
+    .divider {
+      text-align: center;
+      margin: 24px 0;
+      position: relative;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: calc(50% - 30px);
+      height: 1px;
+      background: #e0e0e0;
+    }
+
+    .divider::before {
+      left: 0;
+    }
+
+    .divider::after {
+      right: 0;
+    }
+
+    .social-login {
+      margin-top: 32px;
+    }
+
+    .social-section {
+      background: linear-gradient(135deg, #f8fafb, #ffffff);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      transform-style: preserve-3d;
+      transition: transform 0.3s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .social-section:hover {
+      transform: translateZ(10px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .social-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .social-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px;
+      border: 2px solid #eef2f7;
+      border-radius: 16px;
+      background: var(--white);
+      color: var(--text-dark);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .social-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.6s;
+    }
+
+    .social-button:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .social-button:hover::before {
+      transform: translateX(100%);
+    }
+
+    .social-button img {
+      width: 24px;
+      height: 24px;
+      transition: transform 0.3s ease;
+    }
+
+    .social-button:hover img {
+      transform: scale(1.1);
+    }
+
+    .guest-section {
+      text-align: center;
+      background: linear-gradient(135deg, var(--primary-light), rgba(74, 144, 226, 0.1));
+      border-radius: 16px;
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+      transform-style: preserve-3d;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-top: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .guest-section::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+      animation: rotate 20s linear infinite;
+    }
+
+    .guest-section:hover {
+      transform: translateY(-5px) translateZ(10px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .guest-section h3 {
+      color: var(--text-dark);
+      font-size: 20px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .guest-section p {
+      color: var(--text-light);
+      margin-bottom: 24px;
+      font-size: 15px;
+      line-height: 1.5;
+      position: relative;
+    }
+
+    .guest-btn {
+      background: var(--white);
+      color: var(--text-dark);
+      border: none;
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 200px;
+    }
+
+    .guest-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.7s;
+    }
+
+    .guest-btn:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: var(--shadow-hover);
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .guest-btn:hover::before {
+      left: 100%;
+    }
+
+    .guest-btn i {
+      font-size: 20px;
+      transition: transform 0.3s ease;
+    }
+
+    .guest-btn:hover i {
+      transform: translateX(4px);
+    }
+
+    .guest-features {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 24px;
+      position: relative;
+    }
+
+    .guest-feature {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-light);
+      font-size: 14px;
+    }
+
+    .guest-feature i {
+      color: var(--primary);
+      font-size: 18px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 24px;
+    }
+
+    .footer a {
+      color: #00b386;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .terms {
+      font-size: 14px;
+      color: #666;
+      margin-top: 12px;
+    }
+
+    /* Enhanced OTP Input Styling */
+    .otp-input {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin: 24px 0;
+      perspective: 1000px;
+    }
+
+    .otp-digit {
+      width: 50px;
+      height: 60px;
+      border: 2px solid #eef2f7;
+      border-radius: 12px;
+      font-size: 24px;
+      font-weight: 600;
+      text-align: center;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+      background: linear-gradient(135deg, #f8fafb, #ffffff);
+    }
+
+    .otp-digit:focus {
+      border-color: var(--primary);
+      transform: translateZ(20px);
+      box-shadow: 0 10px 20px rgba(0, 179, 134, 0.1);
+    }
+
+    .resend-text {
+      font-size: 14px;
+      color: #666;
+      margin: 16px 0;
+    }
+
+    .resend-button {
+      background: none;
+      border: none;
+      color: #00b386;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: background 0.3s;
+    }
+
+    .resend-button:hover {
+      background: rgba(0, 179, 134, 0.1);
+    }
+
+    /* Loading Animation Enhancement */
+    .loader {
+      width: 48px;
+      height: 48px;
+      border: 4px solid var(--primary-light);
+      border-top: 4px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite, pulseLoader 2s infinite;
+    }
+
+    @keyframes pulseLoader {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.1) rotate(180deg); }
+    }
+
+    /* Error Message Enhancement */
+    .error-message {
+      background: rgba(220, 53, 69, 0.1);
+      color: #dc3545;
+      padding: 12px;
+      border-radius: 12px;
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .error-message.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .loader {
+      width: 48px;
+      height: 48px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #00b386;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Input Animations */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
+    }
+
+    .shake {
+      animation: shake 0.5s ease-in-out;
+    }
+
+    /* Button Loading State */
+    .primary-button.loading {
+      position: relative;
+      color: transparent;
+    }
+
+    .primary-button.loading::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 2px solid white;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 0.8s linear infinite;
+    }
+
+    /* Social Button Hover Effects */
+    .social-btn {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .social-btn::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(0, 179, 134, 0.1) 0%, transparent 70%);
+      transform: translate(-50%, -50%) scale(0);
+      transition: transform 0.5s;
+    }
+
+    .social-btn:hover::after {
+      transform: translate(-50%, -50%) scale(2);
+    }
+
+    /* Google Sign-In Button Container */
+    .google-signin-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    /* Success Message */
+    .success-message {
+      background-color: #4caf50;
+      color: white;
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+      margin-top: 16px;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+    }
+
+    .success-message.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Responsive Enhancement */
+    @media (max-width: 480px) {
+      .app-container {
+        padding: 0 16px;
+      }
+
+      .login-card {
+        padding: 32px 20px;
+      }
+
+      .otp-digit {
+        width: 40px;
+        height: 50px;
+        font-size: 20px;
+      }
+    }
+
+    /* Apple Sign In Button */
+    .apple-btn {
+      width: 100%;
+      background-color: #000;
+      color: #fff;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .apple-btn:hover {
+      background-color: #333;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .apple-btn:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .apple-btn img {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Animations */
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Chatbot Button */
+    .chatbot-btn {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      background: #00b386;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 56px;
+      height: 56px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      cursor: pointer;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+
+    .chatbot-container {
+      position: fixed;
+      bottom: 100px;
+      right: 32px;
+      width: 350px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      z-index: 9999;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chatbot-header {
+      background: #00b386;
+      color: #fff;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .chatbot-body {
+      padding: 16px;
+      min-height: 120px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .chatbot-footer {
+      display: flex;
+      border-top: 1px solid #eee;
+      padding: 8px;
+    }
+
+    .chatbot-footer input {
+      flex: 1;
+      border: none;
+      padding: 8px;
+      border-radius: 8px;
+      margin-right: 8px;
+      background: #f5f5f5;
+    }
+
+    .chatbot-footer button {
+      background: #00b386;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="login-page">
+  <div class="app-container">
+    <div class="logo-container">
+      <img src="assets/logo.svg" alt="MediQuick Logo" class="app-logo"/>
+      <h1 class="logo-title">MediQuick</h1>
+      <p class="subtitle">Medicines delivered in 10 minutes</p>
+    </div>
+
+    <div class="login-card">
+      <div class="card-header">
+        <i class="material-icons">account_circle</i>
+        <span>Welcome Back!</span>
+      </div>
+
+      <div class="login-content">
+        <p class="login-text">Login for quick medicine delivery</p>
+        
+        <form id="loginForm" class="login-form">
+          <div class="input-group">
+            <i class="material-icons">person</i>
+            <input 
+              type="text" 
+              id="nameInput" 
+              placeholder="Enter your name" 
+              required 
+            />
+          </div>
+          <div class="input-group">
+            <i class="material-icons">phone</i>
+            <input 
+              type="tel" 
+              id="phoneInput" 
+              placeholder="Enter your mobile number" 
+              pattern="[0-9]{10}" 
+              maxlength="10"
+              required 
+            />
+          </div>
+          <button type="submit" class="primary-button">
+            <span>Get OTP</span>
+            <i class="material-icons">arrow_forward</i>
+          </button>
+        </form>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <div id="otpContainer" class="otp-container" style="display: none;">
+          <p>Enter the OTP sent to your phone</p>
+          <div class="otp-input">
+            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required />
+            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required />
+            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required />
+            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required />
+          </div>
+          <p class="resend-text">
+            Didn't receive OTP? 
+            <button type="button" class="resend-button" id="resendOTP">Resend</button>
+          </p>
+        </div>
+
+        <div class="divider">or continue with</div>
+
+        <div class="social-login">
+          <div class="social-section">
+            <div class="social-buttons">
+              <button type="button" class="social-button" onclick="handleGoogleSignIn()">
+                <img src="assets/google.svg" alt="Google" width="24">
+                Sign in with Google
+              </button>
+              <button type="button" class="social-button" onclick="handleAppleSignIn()">
+                <img src="assets/apple-logo.svg" alt="Apple" width="24">
+                Sign in with Apple
+              </button>
+            </div>
+          </div>
+
+          <div class="guest-section">
+            <h3>Quick Access to MediQuick</h3>
+            <p>Need medicines urgently? Skip the registration and start ordering right away!</p>
+            <button type="button" class="guest-btn" onclick="handleGuestLogin()">
+              <i class="material-icons">person_outline</i>
+              Login as Guest
+            </button>
+            <div class="guest-features">
+              <div class="guest-feature">
+                <i class="material-icons">speed</i>
+                <span>Quick Delivery</span>
+              </div>
+              <div class="guest-feature">
+                <i class="material-icons">local_shipping</i>
+                <span>Live Tracking</span>
+              </div>
+              <div class="guest-feature">
+                <i class="material-icons">support_agent</i>
+                <span>24/7 Support</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <p>New to MediQuick? <a href="register.html" id="createAccount">Create account</a></p>
+          <p class="terms">By continuing, you agree to our <a href="#">Terms</a> & <a href="#">Privacy Policy</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading overlay -->
+  <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div class="loader"></div>
+    <p>Please wait...</p>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/auth-service.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/login.js"></script>
+  
+  <script>
+  // Initialize Apple Sign-In
+  AppleID.auth.init({
+      clientId: 'YOUR_APPLE_CLIENT_ID',
+      scope: 'name email',
+      redirectURI: 'https://your-app-url/callback',
+      state: 'origin:web'
+  });
+
+  // Handle Apple Sign-In
+  document.addEventListener('AppleIDSignInOnSuccess', (event) => {
+      handleAppleSignIn(event.detail.authorization);
+  });
+
+  document.addEventListener('AppleIDSignInOnFailure', (error) => {
+      console.error('Apple Sign-In failed:', error);
+      showError('Apple Sign-In failed. Please try again.');
+  });
+  </script>
+  
+  <!-- PWA service worker registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(registration => {
+            console.log('ServiceWorker registration successful');
+          })
+          .catch(err => {
+            console.log('ServiceWorker registration failed: ', err);
+          });
+      });
+    }
+  </script>
+
+  <script>
+    // Check for registered user
+    window.addEventListener('load', () => {
+      // Check existing session
+      const userSession = localStorage.getItem('userSession');
+      const guestSession = localStorage.getItem('guestSession');
+      
+      if (userSession || guestSession) {
+        try {
+          const session = userSession ? JSON.parse(userSession) : JSON.parse(guestSession);
+          const loginTime = new Date(session.loginTime);
+          const now = new Date();
+          const hoursSinceLogin = (now - loginTime) / (1000 * 60 * 60);
+          
+          // Session valid for 24 hours
+          if (hoursSinceLogin < 24) {
+            window.location.replace('dashboard.html');
+            return;
+          } else {
+            // Clear expired session
+            localStorage.clear();
+          }
+        } catch (error) {
+          console.error('Session validation error:', error);
+          localStorage.clear();
+        }
+      }
+
+      // Check for remembered phone
+      const registeredPhone = localStorage.getItem('registeredPhone');
+      if (registeredPhone) {
+        document.getElementById('phoneInput').value = registeredPhone;
+      }
+    });
+
+    // Handle form submission
+    const loginForm = document.getElementById('loginForm');
+    const nameInput = document.getElementById('nameInput');
+    const phoneInput = document.getElementById('phoneInput');
+    const otpContainer = document.getElementById('otpContainer');
+    const otpInputs = document.querySelectorAll('.otp-digit');
+    const resendButton = document.getElementById('resendOTP');
+    const errorMessage = document.getElementById('errorMessage');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    // Function to show error message
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.classList.add('show');
+      setTimeout(() => {
+        errorMessage.classList.remove('show');
+      }, 3000);
+    }
+
+    // Function to show loading overlay
+    function showLoading() {
+      loadingOverlay.style.display = 'flex';
+    }
+
+    // Function to hide loading overlay
+    function hideLoading() {
+      loadingOverlay.style.display = 'none';
+    }
+
+    // Handle form submission
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = nameInput.value.trim();
+      const phoneNumber = phoneInput.value;
+
+      if (name.length < 2) {
+        showError('Please enter a valid name');
+        return;
+      }
+
+      if (phoneNumber.length !== 10) {
+        showError('Please enter a valid 10-digit phone number');
+        return;
+      }
+
+      showLoading();
+      try {
+        // Store user details temporarily
+        sessionStorage.setItem('tempUserName', name);
+        sessionStorage.setItem('tempUserPhone', phoneNumber);
+        
+        // Show OTP input container
+        otpContainer.style.display = 'block';
+        loginForm.style.display = 'none';
+        
+        // Focus first OTP input
+        otpInputs[0].focus();
+      } catch (error) {
+        showError('Failed to send OTP. Please try again.');
+      } finally {
+        hideLoading();
+      }
+    });
+
+    // Handle OTP input
+    otpInputs.forEach((input, index) => {
+      input.addEventListener('input', (e) => {
+        if (e.target.value.length === 1) {
+          if (index < otpInputs.length - 1) {
+            otpInputs[index + 1].focus();
+          } else {
+            // Last digit entered, verify OTP
+            const otp = Array.from(otpInputs).map(input => input.value).join('');
+            verifyOTP(otp);
+          }
+        }
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !e.target.value && index > 0) {
+          otpInputs[index - 1].focus();
+        }
+      });
+    });
+
+    // Function to verify OTP
+    async function verifyOTP(otp) {
+      showLoading();
+      try {
+        const name = sessionStorage.getItem('tempUserName');
+        const phone = sessionStorage.getItem('tempUserPhone');
+        
+        // Create user session
+        const session = {
+          userType: 'phone',
+          name: name,
+          phone: phone,
+          loginTime: new Date().toISOString(),
+          lastActivity: new Date().toISOString(),
+          sessionId: Math.random().toString(36).substr(2, 9)
+        };
+        
+        localStorage.setItem('userSession', JSON.stringify(session));
+        localStorage.setItem('registeredPhone', phone);
+        
+        // Show success message
+        const successMessage = document.createElement('div');
+        successMessage.className = 'success-message show';
+        successMessage.innerHTML = `
+          <i class="material-icons">check_circle</i>
+          Welcome ${name}! Login successful!
+        `;
+        document.querySelector('.login-card').appendChild(successMessage);
+        
+        // Clear temporary storage
+        sessionStorage.clear();
+        
+        // Redirect to dashboard
+        setTimeout(() => {
+          window.location.replace('dashboard.html');
+        }, 1500);
+      } catch (error) {
+        showError('Invalid OTP. Please try again.');
+        otpInputs.forEach(input => input.value = '');
+        otpInputs[0].focus();
+      } finally {
+        hideLoading();
+      }
+    }
+
+    // Handle guest login
+    async function handleGuestLogin() {
+      showLoading();
+      
+      try {
+        const guestId = 'guest_' + Math.random().toString(36).substr(2, 9);
+        const timestamp = new Date().toISOString();
+        
+        // Create guest session
+        const session = {
+          userType: 'guest',
+          name: 'Guest User',
+          guestId: guestId,
+          loginTime: timestamp,
+          lastActivity: timestamp,
+          sessionId: Math.random().toString(36).substr(2, 9),
+          features: {
+            canOrder: true,
+            canTrack: true,
+            needsVerification: false,
+            expiresIn: '24h'
+          }
+        };
+
+        // Clear any existing sessions
+        localStorage.clear();
+        
+        // Set new guest session
+        localStorage.setItem('guestSession', JSON.stringify(session));
+        
+        // Show success message
+        const successMessage = document.createElement('div');
+        successMessage.className = 'success-message show';
+        successMessage.innerHTML = `
+          <i class="material-icons">check_circle</i>
+          Welcome Guest! Logging in...
+        `;
+        document.querySelector('.login-card').appendChild(successMessage);
+        
+        // Navigate to dashboard after short delay
+        setTimeout(() => {
+          window.location.replace('dashboard.html');
+        }, 1500);
+      } catch (error) {
+        console.error('Guest login failed:', error);
+        showError('Failed to login as guest. Please try again.');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    // Handle Google Sign-In
+    async function handleGoogleSignIn() {
+      try {
+        showLoading();
+        
+        // Initialize Google Sign-In
+        google.accounts.id.initialize({
+          client_id: 'YOUR_GOOGLE_CLIENT_ID',
+          callback: async (response) => {
+            try {
+              // Verify the token with your backend
+              const verificationResponse = await fetch('/api/auth/verify-google-token', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  credential: response.credential
+                })
+              });
+
+              if (!verificationResponse.ok) {
+                throw new Error('Token verification failed');
+              }
+
+              const userData = await verificationResponse.json();
+              
+              // Create user session
+              const session = {
+                userType: 'google',
+                name: userData.name,
+                email: userData.email,
+                picture: userData.picture,
+                loginTime: new Date().toISOString(),
+                lastActivity: new Date().toISOString(),
+                sessionId: Math.random().toString(36).substr(2, 9)
+              };
+
+              localStorage.setItem('userSession', JSON.stringify(session));
+              
+              showSuccessMessage(`Welcome ${userData.name}!`);
+              
+              setTimeout(() => {
+                window.location.replace('dashboard.html');
+              }, 1500);
+            } catch (error) {
+              console.error('Google Sign-In Error:', error);
+              showError('Google Sign-In failed. Please try again.');
+            } finally {
+              hideLoading();
+            }
+          }
+        });
+
+        // Trigger Google Sign-In
+        google.accounts.id.prompt();
+      } catch (error) {
+        console.error('Google Sign-In Error:', error);
+        showError('Google Sign-In failed. Please try again.');
+        hideLoading();
+      }
+    }
+
+    // Handle Apple Sign-In
+    async function handleAppleSignIn() {
+      try {
+        showLoading();
+        
+        // Initialize Apple Sign-In
+        AppleID.auth.init({
+          clientId: 'YOUR_APPLE_CLIENT_ID',
+          scope: 'name email',
+          redirectURI: 'https://your-app-url/apple-callback',
+          state: 'origin:web',
+          usePopup: true
+        });
+
+        const response = await AppleID.auth.signIn();
+        
+        // Verify the token with your backend
+        const verificationResponse = await fetch('/api/auth/verify-apple-token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            id_token: response.id_token,
+            authorization_code: response.authorization.code
+          })
+        });
+
+        if (!verificationResponse.ok) {
+          throw new Error('Token verification failed');
+        }
+
+        const userData = await verificationResponse.json();
+        
+        // Create user session
+        const session = {
+          userType: 'apple',
+          name: userData.name || 'Apple User',
+          email: userData.email,
+          loginTime: new Date().toISOString(),
+          lastActivity: new Date().toISOString(),
+          sessionId: Math.random().toString(36).substr(2, 9)
+        };
+
+        localStorage.setItem('userSession', JSON.stringify(session));
+        
+        showSuccessMessage(`Welcome ${session.name}!`);
+        
+        setTimeout(() => {
+          window.location.replace('dashboard.html');
+        }, 1500);
+      } catch (error) {
+        console.error('Apple Sign-In Error:', error);
+        showError('Apple Sign-In failed. Please try again.');
+      } finally {
+        hideLoading();
+      }
+    }
+  </script>
+
+  <!-- Floating Chatbot Button -->
+  <button id="chatbot-toggle" class="chatbot-btn" title="Chat with Assistant">
+    <i class="material-icons">chat</i>
+  </button>
+  <div id="chatbot-container" class="chatbot-container" style="display:none;">
+    <!-- You can embed your chatbot UI here, or use an iframe for a bot service -->
+    <div class="chatbot-header">
+      <span>Chat Assistant</span>
+      <button id="close-chatbot" class="close-btn">&times;</button>
+    </div>
+    <div class="chatbot-body">
+      <!-- Chat messages go here -->
+      <p>Hello! How can I help you?</p>
+    </div>
+    <div class="chatbot-footer">
+      <input type="text" placeholder="Type your message..." />
+      <button>Send</button>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('chatbot-toggle').onclick = function() {
+      document.getElementById('chatbot-container').style.display = 'block';
+    };
+    document.getElementById('close-chatbot').onclick = function() {
+      document.getElementById('chatbot-container').style.display = 'none';
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - MediQuick</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="js/theme.js"></script>
+    <style>
+        :root {
+            --primary: #00b386;
+            --primary-dark: #009973;
+            --primary-light: rgba(0, 179, 134, 0.1);
+            --secondary: #4a90e2;
+            --text-dark: #2c3e50;
+            --text-light: #718096;
+            --background: #f8fafb;
+            --white: #ffffff;
+            --shadow: 0 2px 8px rgba(0,0,0,0.1);
+            --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        [data-theme="dark"] {
+            --primary: #00d4a0;
+            --primary-dark: #00b386;
+            --primary-light: rgba(0, 212, 160, 0.1);
+            --text-dark: #e2e8f0;
+            --text-light: #a0aec0;
+            --background: #1a202c;
+            --white: #2d3748;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease,
+                        color 0.3s ease,
+                        transform 0.3s ease,
+                        box-shadow 0.3s ease,
+                        border-color 0.3s ease;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--text-dark);
+            min-height: 100vh;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Enhanced Background with Logo Pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('assets/logo.svg');
+            background-size: 200px;
+            background-repeat: space;
+            opacity: 0.02;
+            z-index: -1;
+            animation: rotateBg 120s linear infinite;
+        }
+
+        /* Navigation Styles (Same as dashboard) */
+        nav {
+            background: var(--gradient);
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 20px rgba(0, 179, 134, 0.2);
+        }
+
+        nav .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .back-btn {
+            position: relative;
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            border-radius: 12px;
+            height: 40px;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: white;
+            font-weight: 500;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .back-btn i {
+            color: white;
+            font-size: 20px;
+        }
+
+        .back-btn span {
+            font-size: 14px;
+            font-weight: 500;
+            color: white;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            color: var(--white);
+            text-decoration: none;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-brand:hover {
+            transform: translateY(-2px);
+        }
+
+        .nav-brand img {
+            width: 32px;
+            height: 32px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+
+        .nav-brand span {
+            font-size: 24px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Main Content Styles */
+        main {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 40px;
+        }
+
+        .settings-header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.5s ease-out;
+        }
+
+        .settings-header h1 {
+            font-size: 36px;
+            margin-bottom: 12px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .settings-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .settings-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 179, 134, 0.15);
+        }
+
+        .settings-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .settings-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .settings-card h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-dark);
+        }
+
+        .settings-card h2 i {
+            color: var(--primary);
+            font-size: 24px;
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background: var(--gradient);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Theme Selector */
+        .theme-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .theme-option {
+            padding: 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            border: 2px solid transparent;
+        }
+
+        .theme-option.active {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .theme-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin: 0 auto 8px;
+        }
+
+        /* Save Button */
+        .save-btn {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 179, 134, 0.2);
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes rotateBg {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            nav .container {
+                padding: 0 16px;
+                gap: 12px;
+            }
+
+            .back-btn {
+                padding: 0 12px;
+            }
+
+            .back-btn span {
+                display: none;
+            }
+
+            .nav-brand {
+                gap: 8px;
+            }
+
+            .nav-brand img {
+                width: 28px;
+                height: 28px;
+            }
+
+            .nav-brand span {
+                font-size: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            nav .container {
+                padding: 0 12px;
+                gap: 8px;
+            }
+
+            .nav-brand img {
+                width: 24px;
+                height: 24px;
+            }
+
+            .nav-brand span {
+                font-size: 18px;
+            }
+        }
+
+        /* Enhanced Form Controls */
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--primary-light);
+            border-radius: 12px;
+            background: var(--white);
+            color: var(--text-dark);
+            font-size: 1rem;
+            appearance: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:hover {
+            border-color: var(--primary);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        /* Custom Select Styling */
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper::after {
+            content: '';
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 6px solid var(--primary);
+            pointer-events: none;
+        }
+
+        /* Save Button Enhancement */
+        .save-btn-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .save-btn {
+            padding: 16px 32px;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            border-radius: 16px;
+            transform-origin: center;
+            animation: float 3s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* Toast Animation */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        /* Enhanced Switch Animation */
+        .switch input:checked + .slider::before {
+            transform: translateX(26px) rotate(360deg);
+        }
+
+        /* Loading Animation */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--white);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s infinite linear;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <nav>
+        <div class="container">
+            <button class="back-btn" onclick="goBack()">
+                <i class="material-icons">arrow_back</i>
+                <span>Back</span>
+            </button>
+            <a href="dashboard.html" class="nav-brand">
+                <img src="assets/logo.svg" alt="MediQuick">
+                <span>MediQuick</span>
+            </a>
+            <div></div> <!-- Empty div for grid alignment -->
+        </div>
+    </nav>
+
+    <main>
+        <div class="settings-header">
+            <h1>Settings</h1>
+            <p>Customize your MediQuick experience</p>
+        </div>
+
+        <div class="settings-grid">
+            <!-- Theme Settings -->
+            <div class="settings-card">
+                <h2><i class="material-icons">palette</i>Theme Settings</h2>
+                <div class="form-group">
+                    <label>App Theme</label>
+                    <div class="theme-options">
+                        <div class="theme-option active" data-theme="light">
+                            <div class="theme-preview" style="background: #f8fafb"></div>
+                            <span>Light</span>
+                        </div>
+                        <div class="theme-option" data-theme="dark">
+                            <div class="theme-preview" style="background: #1a202c"></div>
+                            <span>Dark</span>
+                        </div>
+                        <div class="theme-option" data-theme="system">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #f8fafb 50%, #1a202c 50%)"></div>
+                            <span>System</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Color Accent</label>
+                    <div class="theme-options">
+                        <div class="theme-option active" data-accent="green">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #00b386, #4a90e2)"></div>
+                            <span>Green</span>
+                        </div>
+                        <div class="theme-option" data-accent="blue">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #2196F3, #6C63FF)"></div>
+                            <span>Blue</span>
+                        </div>
+                        <div class="theme-option" data-accent="purple">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #9C27B0, #E91E63)"></div>
+                            <span>Purple</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification Settings -->
+            <div class="settings-card">
+                <h2><i class="material-icons">notifications</i>Notifications</h2>
+                <div class="form-group">
+                    <label>Push Notifications</label>
+                    <label class="switch">
+                        <input type="checkbox" id="pushNotifications" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Medicine Reminders</label>
+                    <label class="switch">
+                        <input type="checkbox" id="medicineReminders" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Order Updates</label>
+                    <label class="switch">
+                        <input type="checkbox" id="orderUpdates" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Promotional Offers</label>
+                    <label class="switch">
+                        <input type="checkbox" id="promoOffers">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Privacy Settings -->
+            <div class="settings-card">
+                <h2><i class="material-icons">security</i>Privacy & Security</h2>
+                <div class="form-group">
+                    <label>Two-Factor Authentication</label>
+                    <label class="switch">
+                        <input type="checkbox" id="twoFactor">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Share Usage Data</label>
+                    <label class="switch">
+                        <input type="checkbox" id="shareData" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Location Services</label>
+                    <label class="switch">
+                        <input type="checkbox" id="location" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Medical Preferences -->
+            <div class="settings-card">
+                <h2><i class="material-icons">medical_services</i>Medical Preferences</h2>
+                <div class="form-group">
+                    <label>Preferred Pharmacy</label>
+                    <select class="form-control">
+                        <option>Nearest Available</option>
+                        <option>MediQuick Central</option>
+                        <option>24/7 Pharmacy</option>
+                        <option>Custom...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Default Delivery Speed</label>
+                    <div class="select-wrapper">
+                        <select class="form-control" id="deliverySpeed">
+                            <option value="instant">Instant Delivery (10-20 mins)</option>
+                            <option value="express">Express Delivery (1-2 hours)</option>
+                            <option value="priority">Priority Delivery (2-4 hours)</option>
+                            <option value="standard">Standard Delivery (Same Day)</option>
+                            <option value="scheduled">Scheduled Delivery (Choose Time)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Automatic Refills</label>
+                    <label class="switch">
+                        <input type="checkbox" id="autoRefills" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Save Button Container -->
+    <div class="save-btn-container">
+        <button class="save-btn" onclick="saveSettings()">
+            <i class="material-icons">save</i>
+            Save Changes
+        </button>
+    </div>
+
+    <script>
+        // Theme Management
+        const themeOptions = document.querySelectorAll('.theme-option');
+        const accentOptions = document.querySelectorAll('[data-accent]');
+        let currentTheme = localStorage.getItem('theme') || 'light';
+        let currentAccent = localStorage.getItem('accent') || 'green';
+
+        function updateTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            themeOptions.forEach(option => {
+                option.classList.toggle('active', option.dataset.theme === theme);
+            });
+        }
+
+        function updateAccent(accent) {
+            document.documentElement.style.setProperty('--primary', getAccentColor(accent));
+            localStorage.setItem('accent', accent);
+            accentOptions.forEach(option => {
+                option.classList.toggle('active', option.dataset.accent === accent);
+            });
+        }
+
+        function getAccentColor(accent) {
+            const colors = {
+                green: '#00b386',
+                blue: '#2196F3',
+                purple: '#9C27B0'
+            };
+            return colors[accent] || colors.green;
+        }
+
+        // Event Listeners
+        themeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                const theme = option.dataset.theme;
+                updateTheme(theme);
+            });
+        });
+
+        accentOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                const accent = option.dataset.accent;
+                updateAccent(accent);
+            });
+        });
+
+        // Initialize theme and accent
+        updateTheme(currentTheme);
+        updateAccent(currentAccent);
+
+        // Enhanced save function with loading state
+        async function saveSettings() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.classList.add('active');
+
+            try {
+                const settings = {
+                    notifications: {
+                        push: document.getElementById('pushNotifications').checked,
+                        reminders: document.getElementById('medicineReminders').checked,
+                        orders: document.getElementById('orderUpdates').checked,
+                        promos: document.getElementById('promoOffers').checked
+                    },
+                    privacy: {
+                        twoFactor: document.getElementById('twoFactor').checked,
+                        shareData: document.getElementById('shareData').checked,
+                        location: document.getElementById('location').checked
+                    },
+                    medical: {
+                        autoRefills: document.getElementById('autoRefills').checked,
+                        deliverySpeed: document.getElementById('deliverySpeed').value
+                    },
+                    theme: currentTheme,
+                    accent: currentAccent
+                };
+
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                localStorage.setItem('settings', JSON.stringify(settings));
+                showSaveConfirmation('Settings saved successfully!');
+            } catch (error) {
+                showSaveConfirmation('Error saving settings. Please try again.', true);
+            } finally {
+                loadingOverlay.classList.remove('active');
+            }
+        }
+
+        // Enhanced toast notification
+        function showSaveConfirmation(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: ${isError ? '#ff4757' : 'var(--primary)'};
+                color: white;
+                padding: 16px 24px;
+                border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                z-index: 9999;
+                animation: slideIn 0.3s ease-out;
+            `;
+            
+            const icon = document.createElement('i');
+            icon.className = 'material-icons';
+            icon.textContent = isError ? 'error' : 'check_circle';
+            
+            toast.appendChild(icon);
+            toast.appendChild(document.createTextNode(message));
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Update the back button function
+        function goBack() {
+            const button = document.querySelector('.back-btn');
+            const nav = document.querySelector('nav');
+            
+            // First stage animation
+            button.style.transform = 'scale(0.95)';
+            button.style.opacity = '0.8';
+            nav.style.opacity = '0.9';
+            
+            // Second stage animation
+            setTimeout(() => {
+                nav.style.opacity = '0';
+                
+                // Navigate after animation completes
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 200);
+            }, 100);
+        }
+
+        // Load saved delivery speed
+        function loadDeliverySpeed() {
+            const savedSettings = localStorage.getItem('settings');
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+                if (settings.medical && settings.medical.deliverySpeed) {
+                    document.getElementById('deliverySpeed').value = settings.medical.deliverySpeed;
+                }
+            }
+        }
+
+        // Initialize settings on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            loadDeliverySpeed();
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Tracking - MediQuick</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Load configuration and utilities first -->
+    <script>
+        // Error handling for missing files
+        window.handleScriptError = function(scriptSrc) {
+            console.error(`Failed to load script: ${scriptSrc}`);
+            const mapContainer = document.getElementById('map');
+            if (mapContainer) {
+                mapContainer.innerHTML = `
+                    <div class="flex items-center justify-center h-full bg-gray-100 rounded-2xl">
+                        <div class="text-center p-8">
+                            <i class="material-icons text-4xl text-gray-400 mb-4">error_outline</i>
+                            <h3 class="text-xl font-semibold text-gray-700 mb-2">Resource Loading Error</h3>
+                            <p class="text-gray-600">Unable to load required resources. Please try refreshing the page.</p>
+                        </div>
+                    </div>
+                `;
+            }
+        };
+    </script>
+    
+    <!-- Load dependencies with error handling -->
+    <script src="js/config.js" onerror="handleScriptError('config.js')"></script>
+    <script src="js/map-styles.js" onerror="handleScriptError('map-styles.js')"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js" 
+            onerror="handleScriptError('socket.io.js')"></script>
+
+    <!-- Initialize Google Maps API -->
+    <script>
+        // Validate configuration before loading Google Maps
+        function validateConfig() {
+            try {
+                if (!config || !config.googleMaps || !config.googleMaps.apiKey) {
+                    throw new Error('Google Maps API key not found in configuration');
+                }
+                return true;
+            } catch (error) {
+                console.error('Configuration validation failed:', error);
+                return false;
+            }
+        }
+
+        // Load Google Maps API with error handling
+        function loadGoogleMapsAPI() {
+            if (!validateConfig()) {
+                gm_authFailure();
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${config.googleMaps.apiKey}&callback=initMap`;
+            script.async = true;
+            script.defer = true;
+            script.onerror = function() {
+                console.error('Failed to load Google Maps API');
+                gm_authFailure();
+            };
+            document.head.appendChild(script);
+        }
+
+        // Initialize after DOM is ready
+        document.addEventListener('DOMContentLoaded', loadGoogleMapsAPI);
+    </script>
+    <style>
+        :root {
+            --primary: #00b386;
+            --primary-dark: #009973;
+            --primary-light: rgba(0, 179, 134, 0.1);
+            --secondary: #4a90e2;
+            --text-dark: #2c3e50;
+            --text-light: #718096;
+            --background: #f8fafb;
+            --white: #ffffff;
+            --shadow: 0 2px 8px rgba(0,0,0,0.1);
+            --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--background);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Enhanced Background Pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" opacity="0.05"><path d="M20 5L25 15H15L20 5Z M5 20L15 25V15L5 20Z M20 35L15 25H25L20 35Z M35 20L25 15V25L35 20Z" fill="%2300b386"/></svg>');
+            background-repeat: repeat;
+            z-index: -1;
+            animation: patternFloat 60s linear infinite;
+        }
+
+        @keyframes patternFloat {
+            0% { background-position: 0 0; }
+            100% { background-position: 100px 100px; }
+        }
+
+        .map-container {
+            height: 400px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            animation: slideIn 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .order-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .order-card:hover::before {
+            width: 8px;
+        }
+
+        .order-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .order-card:hover .order-actions {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .action-button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .cancel-button {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .cancel-button:hover {
+            background: #fecaca;
+            transform: translateY(-2px);
+        }
+
+        .reorder-button {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .reorder-button:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .track-button {
+            background: #e0f2fe;
+            color: #0284c7;
+        }
+
+        .track-button:hover {
+            background: #bae6fd;
+            transform: translateY(-2px);
+        }
+
+        .order-details {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+            display: none;
+        }
+
+        .order-card.expanded .order-details {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .order-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 12px;
+        }
+
+        .order-item {
+            background: #f8fafb;
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .item-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-light);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+
+        .cancellation-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .cancellation-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .cancellation-modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .reason-options {
+            display: grid;
+            gap: 8px;
+            margin: 16px 0;
+        }
+
+        .reason-option {
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .reason-option:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .reason-option.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .status-confirmed {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .status-dispatched {
+            background: #ebf5ff;
+            color: #3182ce;
+        }
+
+        .status-delivered {
+            background: #f0fff4;
+            color: #38a169;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e2e8f0;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 2px solid white;
+            box-shadow: 0 0 0 4px var(--primary-light);
+        }
+
+        .timeline-item.completed::before {
+            background: var(--primary);
+        }
+
+        .timeline-item.pending::before {
+            background: #e2e8f0;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 179, 134, 0.4); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 179, 134, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 179, 134, 0); }
+        }
+
+        .delivery-agent {
+            animation: slideIn 0.5s ease;
+        }
+
+        .agent-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .eta-badge {
+            background: linear-gradient(135deg, #00b386, #4a90e2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 500;
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <nav class="bg-gradient-to-r from-teal-500 to-green-500 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <button onclick="handleNavigation('dashboard.html')" 
+                        class="flex items-center space-x-2 hover:bg-white/10 px-3 py-2 rounded-lg transition-all duration-300">
+                    <i class="material-icons">arrow_back</i>
+                    <span class="font-medium">Back to Dashboard</span>
+                </button>
+                <h1 class="text-2xl font-bold">Order Tracking</h1>
+                <div class="connection-status flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 text-gray-800">
+                    <i class="material-icons">wifi_off</i>
+                    <span>Connecting...</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <script>
+        // Improved navigation handling
+        function handleNavigation(targetPage) {
+            // Save current state before navigation
+            const currentState = {
+                mapLoaded: !!window.google?.maps,
+                socketConnected: !!window.socket?.connected,
+                orderId: document.querySelector('.order-card')?.dataset?.orderId
+            };
+            
+            // Store state in sessionStorage
+            sessionStorage.setItem('navigationState', JSON.stringify(currentState));
+            
+            // Clean up resources
+            if (window.socket) {
+                socket.disconnect();
+            }
+            
+            // Navigate to target page
+            window.location.href = targetPage;
+        }
+
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                // Page is hidden, clean up resources
+                if (window.socket) {
+                    socket.disconnect();
+                }
+            } else {
+                // Page is visible again, reconnect if needed
+                if (window.socket && !socket.connected) {
+                    initializeSocketConnection();
+                }
+            }
+        });
+
+        // Handle page unload
+        window.addEventListener('beforeunload', function() {
+            // Clean up resources
+            if (window.socket) {
+                socket.disconnect();
+            }
+        });
+    </script>
+
+    <main class="container mx-auto px-4 py-8">
+        <!-- Active Order Section -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold mb-2">Active Order</h2>
+                    <p class="text-gray-600">Order #MED123456</p>
+                </div>
+                <span class="status-badge status-dispatched">Out for Delivery</span>
+            </div>
+
+            <!-- Map Container -->
+            <div class="map-container mb-6" id="map"></div>
+
+            <!-- Delivery Agent Info -->
+            <div class="delivery-agent bg-gray-50 rounded-xl p-4 mb-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <img src="https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff" 
+                             alt="Delivery Agent" 
+                             class="agent-avatar">
+                        <div>
+                            <h3 class="font-semibold">John Doe</h3>
+                            <p class="text-gray-600 text-sm">Delivery Agent</p>
+                        </div>
+                    </div>
+                    <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-all">
+                        <i class="material-icons">phone</i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ETA and Progress -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-semibold mb-4">Estimated Time of Arrival</h3>
+                    <div class="flex items-center gap-4">
+                        <span class="eta-badge">
+                            <i class="material-icons align-middle mr-2">schedule</i>
+                            25 mins
+                        </span>
+                        <span class="text-gray-600">2.5 km away</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-semibold mb-4">Order Progress</h3>
+                    <div class="timeline">
+                        <div class="timeline-item completed">
+                            <h4 class="font-medium">Order Confirmed</h4>
+                            <p class="text-sm text-gray-600">10:30 AM</p>
+                        </div>
+                        <div class="timeline-item completed">
+                            <h4 class="font-medium">Order Dispatched</h4>
+                            <p class="text-sm text-gray-600">11:15 AM</p>
+                        </div>
+                        <div class="timeline-item pending">
+                            <h4 class="font-medium">Out for Delivery</h4>
+                            <p class="text-sm text-gray-600">Expected by 12:00 PM</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Past Orders -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold mb-6">Past Orders</h2>
+            <div class="space-y-4">
+                <div class="order-card" data-order-id="MED123455">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-semibold">Order #MED123455</h3>
+                            <p class="text-gray-600 text-sm">Delivered on March 10, 2024</p>
+                        </div>
+                        <span class="status-badge status-delivered">Delivered</span>
+                    </div>
+                    <div class="order-actions">
+                        <button class="action-button reorder-button" onclick="reorderItems('MED123455')">
+                            <i class="material-icons">replay</i>
+                            Reorder
+                        </button>
+                        <button class="action-button track-button" onclick="trackOrder('MED123455')">
+                            <i class="material-icons">local_shipping</i>
+                            Track Again
+                        </button>
+                    </div>
+                    <div class="order-details">
+                        <div class="order-items">
+                            <div class="order-item">
+                                <div class="item-icon">
+                                    <i class="material-icons">medication</i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium">Paracetamol 500mg</h4>
+                                    <p class="text-sm text-gray-600">Qty: 2</p>
+                                </div>
+                            </div>
+                            <div class="order-item">
+                                <div class="item-icon">
+                                    <i class="material-icons">medication</i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium">Vitamin C</h4>
+                                    <p class="text-sm text-gray-600">Qty: 1</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-card" data-order-id="MED123454">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-semibold">Order #MED123454</h3>
+                            <p class="text-gray-600 text-sm">Delivered on March 5, 2024</p>
+                        </div>
+                        <span class="status-badge status-delivered">Delivered</span>
+                    </div>
+                    <div class="order-actions">
+                        <button class="action-button reorder-button" onclick="reorderItems('MED123454')">
+                            <i class="material-icons">replay</i>
+                            Reorder
+                        </button>
+                        <button class="action-button track-button" onclick="trackOrder('MED123454')">
+                            <i class="material-icons">local_shipping</i>
+                            Track Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let map, deliveryMarker, destinationMarker, directionsService, directionsRenderer;
+
+        // Initialize map
+        function initMap() {
+            try {
+                // Verify API key is available
+                if (!config || !config.googleMaps || !config.googleMaps.apiKey) {
+                    throw new Error('Google Maps API key not found in configuration');
+                }
+
+                // Initialize marker icons
+                markerIcons = createMarkerIcons();
+                if (!markerIcons) {
+                    throw new Error('Failed to create marker icons');
+                }
+
+                // Verify Google Maps API is loaded
+                if (!google || !google.maps) {
+                    throw new Error('Google Maps API not loaded');
+                }
+
+            } catch (error) {
+                console.error('Map initialization error:', error);
+                gm_authFailure();
+                return;
+            }
+            
+            // Initialize services
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({
+                suppressMarkers: true,
+                polylineOptions: {
+                    strokeColor: '#00b386',
+                    strokeWeight: 4
+                }
+            });
+
+            /** @type {MapConfig} */
+            const mapConfig = {
+                apiKey: config.googleMaps.apiKey,
+                defaultLocation: { lat: 20.5937, lng: 78.9629 }, // Center of India
+                defaultZoom: 15
+            };
+
+            // Create map instance with retry mechanism
+            const createMapWithRetry = async (retries = 3, delay = 1000) => {
+                for (let i = 0; i < retries; i++) {
+                    try {
+                        const mapElement = document.getElementById('map');
+                        if (!mapElement) throw new Error('Map container not found');
+
+                        map = new google.maps.Map(mapElement, {
+                            center: mapConfig.defaultLocation,
+                            zoom: mapConfig.defaultZoom,
+                            styles: mapStyles,
+                            disableDefaultUI: true,
+                            zoomControl: true,
+                            mapTypeControl: false,
+                            scaleControl: true,
+                            streetViewControl: false,
+                            rotateControl: false,
+                            fullscreenControl: true
+                        });
+
+                        // Verify map instance
+                        if (!map || typeof map.setCenter !== 'function') {
+                            throw new Error('Invalid map instance');
+                        }
+
+                        return map;
+                    } catch (error) {
+                        console.error(`Map creation attempt ${i + 1} failed:`, error);
+                        if (i === retries - 1) throw error;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    }
+                }
+            };
+
+            // Initialize map with error handling
+            createMapWithRetry()
+                .catch(error => {
+                    console.error('Failed to create map after retries:', error);
+                    gm_authFailure();
+                });
+
+            directionsRenderer.setMap(map);
+
+            // Get user's location
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        
+                        // Set delivery start point (simulated pharmacy location)
+                        const pharmacyLocation = {
+                            lat: userLocation.lat + 0.01,
+                            lng: userLocation.lng + 0.01
+                        };
+
+                        // Create markers
+                        deliveryMarker = new google.maps.Marker({
+                            position: pharmacyLocation,
+                            map: map,
+                            icon: markerIcons.delivery,
+                            title: 'Delivery Agent'
+                        });
+
+                        destinationMarker = new google.maps.Marker({
+                            position: userLocation,
+                            map: map,
+                            icon: markerIcons.destination,
+                            title: 'Delivery Location'
+                        });
+
+                        // Calculate and display route
+                        calculateAndDisplayRoute(pharmacyLocation, userLocation);
+
+                        // Simulate delivery movement
+                        simulateDelivery(pharmacyLocation, userLocation);
+                    },
+                    () => {
+                        console.error('Error: The Geolocation service failed.');
+                        // Use default location
+                        handleLocationError(true, map.getCenter());
+                    }
+                );
+            } else {
+                console.error('Error: Your browser doesn\'t support geolocation.');
+                handleLocationError(false, map.getCenter());
+            }
+        }
+
+        function calculateAndDisplayRoute(origin, destination) {
+            directionsService.route(
+                {
+                    origin: origin,
+                    destination: destination,
+                    travelMode: google.maps.TravelMode.DRIVING
+                },
+                (response, status) => {
+                    if (status === 'OK') {
+                        directionsRenderer.setDirections(response);
+                        updateETA(response.routes[0].legs[0].duration.text);
+                    } else {
+                        console.error('Directions request failed due to ' + status);
+                    }
+                }
+            );
+        }
+
+        function simulateDelivery(start, end) {
+            let fraction = 0;
+            const step = 0.01;
+
+            const interval = setInterval(() => {
+                fraction += step;
+                if (fraction > 1) {
+                    clearInterval(interval);
+                    return;
+                }
+
+                const lat = start.lat + (end.lat - start.lat) * fraction;
+                const lng = start.lng + (end.lng - start.lng) * fraction;
+                const position = { lat, lng };
+
+                deliveryMarker.setPosition(position);
+
+                // Emit position update through Socket.IO
+                socket.emit('updateLocation', {
+                    orderId: 'MED123456',
+                    lat: lat,
+                    lng: lng,
+                    agentId: 'AGENT001'
+                });
+            }, 1000);
+        }
+
+        function updateETA(duration) {
+            const etaBadge = document.querySelector('.eta-badge');
+            if (etaBadge) {
+                etaBadge.innerHTML = `
+                    <i class="material-icons align-middle mr-2">schedule</i>
+                    ${duration}
+                `;
+            }
+        }
+
+        function handleLocationError(browserHasGeolocation, pos) {
+            // Handle location error and show appropriate message
+            const infoWindow = new google.maps.InfoWindow();
+            infoWindow.setPosition(pos);
+            infoWindow.setContent(
+                browserHasGeolocation
+                    ? 'Error: The Geolocation service failed.'
+                    : 'Error: Your browser doesn\'t support geolocation.'
+            );
+            infoWindow.open(map);
+        }
+
+        // Socket.IO Configuration
+        const SOCKET_CONFIG = {
+            url: 'http://localhost:3000',
+            options: {
+                reconnection: true,
+                reconnectionAttempts: 5,
+                reconnectionDelay: 1000,
+                timeout: 10000
+            }
+        };
+
+        // Initialize Socket.IO with better error handling
+        function initializeSocketConnection() {
+            try {
+                window.socket = io(SOCKET_CONFIG.url, SOCKET_CONFIG.options);
+
+                socket.on('connect', () => {
+                    console.log('Connected to Socket.IO server');
+                    updateConnectionStatus('connected');
+                });
+
+                socket.on('connect_error', (error) => {
+                    console.error('Socket.IO connection error:', error);
+                    updateConnectionStatus('error');
+                });
+
+                socket.on('disconnect', (reason) => {
+                    console.log('Disconnected from Socket.IO server:', reason);
+                    updateConnectionStatus('disconnected');
+                });
+
+                socket.on('locationUpdate', (data) => {
+                    try {
+                        if (deliveryMarker && data.lat && data.lng) {
+                            const newPosition = new google.maps.LatLng(data.lat, data.lng);
+                            deliveryMarker.setPosition(newPosition);
+                            updateETA(data.duration);
+                        }
+                    } catch (error) {
+                        console.error('Error updating location:', error);
+                    }
+                });
+
+                socket.on('orderStatusUpdate', (data) => {
+                    try {
+                        updateOrderStatus(data);
+                    } catch (error) {
+                        console.error('Error updating order status:', error);
+                    }
+                });
+
+            } catch (error) {
+                console.error('Error initializing Socket.IO:', error);
+                updateConnectionStatus('error');
+            }
+        }
+
+        function updateConnectionStatus(status) {
+            const statusIndicator = document.querySelector('.connection-status');
+            if (!statusIndicator) return;
+
+            const statusConfig = {
+                connected: { icon: 'wifi', text: 'Connected', class: 'bg-green-100 text-green-800' },
+                disconnected: { icon: 'wifi_off', text: 'Disconnected', class: 'bg-gray-100 text-gray-800' },
+                error: { icon: 'error_outline', text: 'Connection Error', class: 'bg-red-100 text-red-800' }
+            };
+
+            const config = statusConfig[status];
+            statusIndicator.innerHTML = `
+                <i class="material-icons">${config.icon}</i>
+                <span>${config.text}</span>
+            `;
+            statusIndicator.className = `connection-status flex items-center gap-2 px-3 py-1 rounded-full ${config.class}`;
+        }
+
+        // Initialize Service Worker
+        if ('serviceWorker' in navigator) {
+            // Register both service workers
+            Promise.all([
+                navigator.serviceWorker.register('/js/service-worker.js'),
+                navigator.serviceWorker.register('/firebase-messaging-sw.js')
+            ]).then(([swReg, fcmReg]) => {
+                console.log('Service Workers registered:', { sw: swReg, fcm: fcmReg });
+                
+                // Listen for offline/online events
+                window.addEventListener('online', updateOnlineStatus);
+                window.addEventListener('offline', updateOnlineStatus);
+                
+                // Initial check
+                updateOnlineStatus();
+            }).catch((err) => {
+                console.error('Service Worker registration failed:', err);
+            });
+        }
+
+        function updateOnlineStatus() {
+            const statusBar = document.createElement('div');
+            statusBar.id = 'connection-status-bar';
+            statusBar.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                padding: 8px;
+                text-align: center;
+                font-weight: 500;
+                z-index: 9999;
+                transition: all 0.3s ease;
+            `;
+
+            if (navigator.onLine) {
+                statusBar.textContent = '🟢 Back Online';
+                statusBar.style.backgroundColor = '#4ade80';
+                statusBar.style.color = '#064e3b';
+                setTimeout(() => statusBar.remove(), 3000);
+            } else {
+                statusBar.textContent = '🔴 Offline Mode - Some features may be limited';
+                statusBar.style.backgroundColor = '#fecaca';
+                statusBar.style.color = '#991b1b';
+            }
+
+            // Remove existing status bar if any
+            const existingBar = document.getElementById('connection-status-bar');
+            if (existingBar) existingBar.remove();
+
+            document.body.appendChild(statusBar);
+        }
+
+        // Initialize Socket.IO connection
+        initializeSocketConnection();
+
+        // Function to initialize socket connection
+        function initializeSocketConnection() {
+            try {
+                const socket = io('http://localhost:3000');
+                
+                socket.on('connect', () => {
+                    console.log('Connected to Socket.IO server');
+                });
+
+                socket.on('locationUpdate', (data) => {
+                    if (deliveryMarker) {
+                        const newPosition = new google.maps.LatLng(data.lat, data.lng);
+                        deliveryMarker.setPosition(newPosition);
+                    }
+                });
+
+                socket.on('orderStatusUpdate', (data) => {
+                    updateOrderStatus(data);
+                });
+            } catch (error) {
+                console.error('Socket.IO connection error:', error);
+            }
+        }
+
+        // Handle Google Maps loading error
+        function gm_authFailure() {
+            const mapContainer = document.getElementById('map');
+            if (mapContainer) {
+                mapContainer.innerHTML = `
+                    <div class="flex items-center justify-center h-full bg-gray-100 rounded-2xl">
+                        <div class="text-center p-8">
+                            <i class="material-icons text-4xl text-gray-400 mb-4">error_outline</i>
+                            <h3 class="text-xl font-semibold text-gray-700 mb-2">Map Loading Error</h3>
+                            <p class="text-gray-600">Unable to load Google Maps. Please check your API key and try again.</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Order Management Functions
+        function cancelOrder(orderId) {
+            const modal = document.createElement('div');
+            modal.className = 'cancellation-modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h3 class="text-xl font-semibold mb-4">Cancel Order</h3>
+                    <p class="text-gray-600 mb-4">Please select a reason for cancellation:</p>
+                    <div class="reason-options">
+                        <div class="reason-option" onclick="selectReason(this)">
+                            <p class="font-medium">Found better price elsewhere</p>
+                        </div>
+                        <div class="reason-option" onclick="selectReason(this)">
+                            <p class="font-medium">Ordered by mistake</p>
+                        </div>
+                        <div class="reason-option" onclick="selectReason(this)">
+                            <p class="font-medium">Delivery time too long</p>
+                        </div>
+                        <div class="reason-option" onclick="selectReason(this)">
+                            <p class="font-medium">Other reason</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-4 mt-6">
+                        <button onclick="closeModal()" 
+                                class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+                            Keep Order
+                        </button>
+                        <button onclick="confirmCancellation('${orderId}')"
+                                class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
+                            Cancel Order
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+
+        function selectReason(element) {
+            document.querySelectorAll('.reason-option').forEach(opt => 
+                opt.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+
+        function closeModal() {
+            const modal = document.querySelector('.cancellation-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => modal.remove(), 300);
+            }
+        }
+
+        function confirmCancellation(orderId) {
+            const selectedReason = document.querySelector('.reason-option.selected');
+            if (!selectedReason) {
+                showToast('Please select a reason for cancellation', 'error');
+                return;
+            }
+
+            // Simulate API call
+            setTimeout(() => {
+                const orderCard = document.querySelector(`[data-order-id="${orderId}"]`);
+                if (orderCard) {
+                    orderCard.style.opacity = '0';
+                    orderCard.style.transform = 'translateX(-20px)';
+                    setTimeout(() => orderCard.remove(), 300);
+                }
+                closeModal();
+                showToast('Order cancelled successfully');
+            }, 1000);
+        }
+
+        function reorderItems(orderId) {
+            // Simulate API call to get order items
+            const orderItems = [
+                { id: 1, name: 'Paracetamol 500mg', quantity: 2 },
+                { id: 2, name: 'Vitamin C', quantity: 1 }
+            ];
+
+            // Add items to cart
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            orderItems.forEach(item => {
+                cart.push({
+                    id: item.id,
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: 99.99 // Example price
+                });
+            });
+            localStorage.setItem('cart', JSON.stringify(cart));
+
+            showToast('Items added to cart');
+            setTimeout(() => {
+                window.location.href = 'cart.html';
+            }, 1500);
+        }
+
+        function trackOrder(orderId) {
+            // Show tracking modal or redirect to tracking page
+            window.location.href = `tracking.html?orderId=${orderId}`;
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-lg transition-all transform translate-y-0 opacity-100 ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            } text-white`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.transform = 'translateY(20px)';
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Toggle order details
+        document.querySelectorAll('.order-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (!e.target.closest('.action-button')) {
+                    card.classList.toggle('expanded');
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

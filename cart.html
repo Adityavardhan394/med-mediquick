@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediQuick - Shopping Cart</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #00b386;
+      --primary-dark: #009973;
+      --primary-light: rgba(0, 179, 134, 0.1);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #e6fff9, #ffffff);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Enhanced Background Pattern */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" opacity="0.05"><path d="M20 5L25 15H15L20 5Z" fill="%2300b386"/></svg>');
+      background-repeat: repeat;
+      z-index: -1;
+      animation: patternFloat 60s linear infinite;
+    }
+
+    @keyframes patternFloat {
+      0% { background-position: 0 0; }
+      100% { background-position: 100px 100px; }
+    }
+
+    .cart-item {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: slideIn 0.6s backwards;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    /* Cart Item Staggered Animation */
+    .cart-item:nth-child(1) { animation-delay: 0.1s; }
+    .cart-item:nth-child(2) { animation-delay: 0.2s; }
+    .cart-item:nth-child(3) { animation-delay: 0.3s; }
+    .cart-item:nth-child(4) { animation-delay: 0.4s; }
+
+    .medicine-icon {
+      transition: all 0.3s ease;
+    }
+
+    .cart-item:hover .medicine-icon {
+      transform: scale(1.1) rotate(5deg);
+      color: var(--primary);
+    }
+
+    .quantity-btn {
+      transition: all 0.3s ease;
+    }
+
+    .quantity-btn:hover {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .remove-btn {
+      transition: all 0.3s ease;
+    }
+
+    .remove-btn:hover {
+      color: #ef4444;
+      transform: scale(1.1);
+    }
+
+    .checkout-btn {
+      transition: all 0.3s ease;
+    }
+
+    .checkout-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 179, 134, 0.2);
+    }
+
+    .checkout-step {
+      transition: all 0.3s ease;
+    }
+
+    .checkout-step.active {
+      border-color: #00b386;
+    }
+
+    .checkout-step.active .step-number {
+      background: #00b386;
+      color: white;
+    }
+
+    .address-card {
+      transition: all 0.3s ease;
+    }
+
+    .address-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .address-card.selected {
+      border-color: #00b386;
+      background-color: #f0fdf9;
+    }
+
+    .payment-method {
+      transition: all 0.3s ease;
+    }
+
+    .payment-method:hover {
+      transform: translateY(-2px);
+    }
+
+    .payment-method.selected {
+      border-color: #00b386;
+      background-color: #f0fdf9;
+    }
+
+    .coupon-card {
+      transition: all 0.3s ease;
+    }
+
+    .coupon-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .prescription-upload {
+      transition: all 0.3s ease;
+    }
+
+    .prescription-upload:hover {
+      border-color: #00b386;
+    }
+
+    /* New Payment Method Styles */
+    .payment-tabs {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 16px;
+    }
+
+    .payment-tab {
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #6b7280;
+    }
+
+    .payment-tab.active {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .payment-tab:hover {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .crypto-payment {
+      background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+      color: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 16px;
+    }
+
+    .crypto-amount {
+      font-size: 24px;
+      font-weight: 600;
+      margin: 16px 0;
+      color: #00ff88;
+    }
+
+    .crypto-address {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 12px;
+      border-radius: 8px;
+      font-family: monospace;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 16px 0;
+    }
+
+    .crypto-qr {
+      width: 120px;
+      height: 120px;
+      background: white;
+      padding: 8px;
+      border-radius: 8px;
+      margin: 16px auto;
+    }
+
+    .payment-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: rgba(0, 255, 136, 0.1);
+      color: #00ff88;
+      margin-top: 16px;
+    }
+
+    .payment-status.pending {
+      background: rgba(255, 193, 7, 0.1);
+      color: #ffc107;
+    }
+
+    .payment-status.error {
+      background: rgba(255, 71, 87, 0.1);
+      color: #ff4757;
+    }
+
+    .crypto-timer {
+      font-size: 14px;
+      color: #ffc107;
+      margin-top: 8px;
+    }
+
+    .payment-security {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+      padding: 12px;
+      background: #f8fafb;
+      border-radius: 8px;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .payment-security i {
+      color: var(--primary);
+    }
+
+    .upi-methods {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .upi-method {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .upi-method.selected {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .upi-method.selected::after {
+      content: '✓';
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: var(--primary);
+      color: white;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .upi-method img {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 8px;
+      object-fit: contain;
+    }
+
+    .upi-method span {
+      font-size: 12px;
+      color: #6b7280;
+      display: block;
+    }
+
+    .upi-method:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      transform: translateY(-2px);
+    }
+
+    .upi-payment-status {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 8px;
+      background: #f8fafb;
+      display: none;
+    }
+
+    .upi-payment-status.active {
+      display: block;
+    }
+
+    .upi-payment-status.success {
+      background: #ecfdf5;
+      color: #059669;
+    }
+
+    .upi-payment-status.error {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+
+    .upi-payment-status.pending {
+      background: #fffbeb;
+      color: #d97706;
+    }
+
+    .upi-timer {
+      font-size: 14px;
+      color: #d97706;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .upi-timer i {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .card-input {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .card-input:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-light);
+    }
+
+    .card-input input {
+      width: 100%;
+      border: none;
+      outline: none;
+      font-size: 16px;
+    }
+
+    .card-input label {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .card-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 16px;
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-teal-500 to-green-500 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-3">
+      <div class="flex items-center justify-between">
+        <button onclick="window.location.href='medicines.html'" 
+                class="flex items-center space-x-2 hover:bg-white/10 px-3 py-2 rounded-lg transition-all duration-300">
+          <i class="material-icons">arrow_back</i>
+          <span class="font-medium">Back to Medicines</span>
+        </button>
+        <h1 class="text-2xl font-bold">Checkout</h1>
+        <div class="w-10"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container mx-auto px-4 py-8">
+    <!-- Checkout Steps -->
+    <div class="flex justify-between mb-8">
+      <div class="checkout-step active flex-1 border-b-2 pb-4 text-center">
+        <div class="step-number w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-2">1</div>
+        <span class="text-sm font-medium">Cart Review</span>
+      </div>
+      <div class="checkout-step flex-1 border-b-2 pb-4 text-center">
+        <div class="step-number w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-2">2</div>
+        <span class="text-sm font-medium">Delivery Address</span>
+      </div>
+      <div class="checkout-step flex-1 border-b-2 pb-4 text-center">
+        <div class="step-number w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-2">3</div>
+        <span class="text-sm font-medium">Payment</span>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Cart Items -->
+      <div class="lg:col-span-2">
+        <div class="bg-white rounded-2xl shadow-md p-6 mb-6" id="cartItemsContainer">
+          <!-- Cart items will be dynamically added here -->
+        </div>
+
+        <!-- Prescriptions Required Section -->
+        <div class="bg-white rounded-2xl shadow-md p-6 mb-6" id="prescriptionSection">
+          <h3 class="text-lg font-semibold mb-4">Required Prescriptions</h3>
+          <div class="space-y-4">
+            <!-- Prescription uploads will be added here -->
+          </div>
+        </div>
+
+        <!-- Delivery Address -->
+        <div class="bg-white rounded-2xl shadow-md p-6 mb-6 hidden" id="addressSection">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-semibold">Delivery Address</h3>
+            <button onclick="cartManager.showAddAddressForm()" 
+                    class="text-teal-600 hover:text-teal-700 flex items-center gap-2">
+              <i class="material-icons text-sm">add</i>
+              Add New Address
+            </button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="addressList">
+            <!-- Address cards will be added here -->
+          </div>
+        </div>
+
+        <!-- Payment Methods -->
+        <div class="bg-white rounded-2xl shadow-md p-6 mb-6 hidden" id="paymentSection">
+          <h3 class="text-lg font-semibold mb-6">Payment Method</h3>
+          
+          <div class="payment-tabs">
+            <div class="payment-tab active" data-tab="card">
+              <i class="fas fa-credit-card"></i>
+              <span>Card</span>
+            </div>
+            <div class="payment-tab" data-tab="upi">
+              <i class="fas fa-mobile-alt"></i>
+              <span>UPI</span>
+            </div>
+            <div class="payment-tab" data-tab="crypto">
+              <i class="fab fa-bitcoin"></i>
+              <span>Crypto</span>
+            </div>
+          </div>
+
+          <!-- Card Payment -->
+          <div class="payment-content" id="cardPayment">
+            <div class="card-input">
+              <label>Card Number</label>
+              <input type="text" placeholder="1234 5678 9012 3456" maxlength="19">
+            </div>
+            <div class="card-row">
+              <div class="card-input">
+                <label>Cardholder Name</label>
+                <input type="text" placeholder="John Doe">
+              </div>
+              <div class="card-input">
+                <label>Expiry</label>
+                <input type="text" placeholder="MM/YY" maxlength="5">
+              </div>
+              <div class="card-input">
+                <label>CVV</label>
+                <input type="password" placeholder="123" maxlength="3">
+              </div>
+            </div>
+            <div class="payment-security">
+              <i class="fas fa-shield-alt"></i>
+              <span>Your payment information is secure and encrypted</span>
+            </div>
+          </div>
+
+          <!-- UPI Payment -->
+          <div class="payment-content hidden" id="upiPayment">
+            <div class="card-input">
+              <label>UPI ID</label>
+              <input type="text" placeholder="yourname@upi" pattern="[a-zA-Z0-9._-]+@[a-zA-Z]{3,}">
+              <p class="text-xs text-gray-500 mt-1">Enter your UPI ID (e.g., name@upi)</p>
+            </div>
+            
+            <div class="upi-methods">
+              <div class="upi-method" data-app="gpay">
+                <img src="assets/gpay.png" alt="Google Pay">
+                <span>Google Pay</span>
+              </div>
+              <div class="upi-method" data-app="phonepe">
+                <img src="assets/phonepe.png" alt="PhonePe">
+                <span>PhonePe</span>
+              </div>
+              <div class="upi-method" data-app="paytm">
+                <img src="assets/paytm.png" alt="Paytm">
+                <span>Paytm</span>
+              </div>
+              <div class="upi-method" data-app="amazonpay">
+                <img src="assets/amazonpay.png" alt="Amazon Pay">
+                <span>Amazon Pay</span>
+              </div>
+              <div class="upi-method" data-app="bhim">
+                <img src="assets/bhim.png" alt="BHIM">
+                <span>BHIM</span>
+              </div>
+              <div class="upi-method" data-app="whatsapp">
+                <img src="assets/whatsapp.png" alt="WhatsApp Pay">
+                <span>WhatsApp Pay</span>
+              </div>
+              <div class="upi-method" data-app="airtel">
+                <img src="assets/airtel.png" alt="Airtel Thanks">
+                <span>Airtel Thanks</span>
+              </div>
+              <div class="upi-method" data-app="other">
+                <i class="fas fa-ellipsis-h text-2xl text-gray-400"></i>
+                <span>Other UPI Apps</span>
+              </div>
+            </div>
+
+            <div class="upi-payment-status" id="upiPaymentStatus">
+              <div class="flex items-center gap-3">
+                <i class="fas fa-spinner fa-spin"></i>
+                <div>
+                  <p class="font-medium">Waiting for payment confirmation</p>
+                  <p class="text-sm mt-1">Please complete the payment in your UPI app</p>
+                </div>
+              </div>
+              <div class="upi-timer">
+                <i class="fas fa-clock"></i>
+                <span>Time remaining: <span id="upiTimer">04:59</span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Crypto Payment -->
+          <div class="payment-content hidden" id="cryptoPayment">
+            <div class="crypto-payment">
+              <div class="flex justify-between items-center">
+                <h4 class="font-medium">Pay with Bitcoin</h4>
+                <span class="text-sm text-gray-400">Recommended</span>
+              </div>
+              <div class="crypto-amount">0.0012 BTC</div>
+              <div class="crypto-address">
+                <span>bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</span>
+                <button class="text-sm text-teal-400 hover:text-teal-300">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+              <div class="crypto-qr">
+                <!-- QR Code will be generated here -->
+                <img src="assets/bitcoin-qr.png" alt="Bitcoin QR Code" class="w-full h-full">
+              </div>
+              <div class="payment-status pending">
+                <i class="fas fa-clock"></i>
+                <span>Waiting for payment confirmation</span>
+              </div>
+              <div class="crypto-timer">
+                <i class="fas fa-hourglass-half"></i>
+                <span>Time remaining: 14:59</span>
+              </div>
+            </div>
+            <div class="mt-4">
+              <div class="crypto-payment">
+                <div class="flex justify-between items-center">
+                  <h4 class="font-medium">Pay with Ethereum</h4>
+                  <span class="text-sm text-gray-400">Alternative</span>
+                </div>
+                <div class="crypto-amount">0.023 ETH</div>
+                <div class="crypto-address">
+                  <span>0x71C7656EC7ab88b098defB751B7401B5f6d8976F</span>
+                  <button class="text-sm text-teal-400 hover:text-teal-300">
+                    <i class="fas fa-copy"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="payment-method p-4 border rounded-xl cursor-pointer">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                  <i class="fas fa-wallet text-green-600"></i>
+                </div>
+                <div>
+                  <h4 class="font-medium">UPI</h4>
+                  <p class="text-sm text-gray-500">Pay using UPI</p>
+                </div>
+              </div>
+            </div>
+            <div class="payment-method p-4 border rounded-xl cursor-pointer">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <i class="fas fa-money-bill-wave text-orange-600"></i>
+                </div>
+                <div>
+                  <h4 class="font-medium">Cash on Delivery</h4>
+                  <p class="text-sm text-gray-500">Pay when you receive</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-2xl shadow-md p-6 sticky top-4">
+          <h2 class="text-xl font-semibold mb-6">Order Summary</h2>
+          
+          <!-- Coupon Section -->
+          <div class="mb-6">
+            <div class="flex gap-2">
+              <input type="text" 
+                     placeholder="Enter coupon code" 
+                     class="flex-grow p-2 border rounded-lg">
+              <button class="bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-600 transition-all">
+                Apply
+              </button>
+            </div>
+            
+            <!-- Available Coupons -->
+            <div class="mt-4">
+              <h4 class="text-sm font-medium mb-2">Available Coupons</h4>
+              <div class="space-y-2">
+                <div class="coupon-card p-3 border border-dashed rounded-lg cursor-pointer hover:border-teal-500">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h5 class="font-medium text-teal-600">FIRST20</h5>
+                      <p class="text-xs text-gray-500">20% off on your first order</p>
+                    </div>
+                    <button class="text-xs text-teal-600">Apply</button>
+                  </div>
+                </div>
+                <div class="coupon-card p-3 border border-dashed rounded-lg cursor-pointer hover:border-teal-500">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h5 class="font-medium text-teal-600">MEDI100</h5>
+                      <p class="text-xs text-gray-500">Flat ₹100 off on orders above ₹500</p>
+                    </div>
+                    <button class="text-xs text-teal-600">Apply</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Price Details -->
+          <div class="space-y-4 mb-6">
+            <div class="flex justify-between text-gray-600">
+              <span>Subtotal</span>
+              <span id="subtotal">₹0.00</span>
+            </div>
+            <div class="flex justify-between text-gray-600">
+              <span>Delivery Fee</span>
+              <span id="shipping">₹5.00</span>
+            </div>
+            <div class="flex justify-between text-gray-600">
+              <span>Tax (10%)</span>
+              <span id="tax">₹0.00</span>
+            </div>
+            <div class="flex justify-between text-gray-600">
+              <span>Discount</span>
+              <span id="discount" class="text-green-600">-₹0.00</span>
+            </div>
+            <div class="h-px bg-gray-200"></div>
+            <div class="flex justify-between text-lg font-semibold">
+              <span>Total</span>
+              <span id="total">₹0.00</span>
+            </div>
+          </div>
+
+          <button onclick="cartManager.proceedToNextStep()" 
+                  class="checkout-btn w-full bg-gradient-to-r from-teal-500 to-green-500 text-white py-4 px-6 rounded-xl font-semibold flex items-center justify-center gap-2">
+            <i class="material-icons">shopping_cart_checkout</i>
+            <span id="checkoutButtonText">Proceed to Address</span>
+          </button>
+
+          <div class="mt-6 text-center">
+            <a href="medicines.html" class="text-teal-600 hover:text-teal-700 flex items-center justify-center gap-2 font-medium">
+              <i class="material-icons text-sm">arrow_back</i>
+              Continue Shopping
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    class CartManager {
+      constructor() {
+        this.cart = JSON.parse(localStorage.getItem('cartItems')) || [];
+        this.currentStep = 1;
+        this.selectedPaymentMethod = 'card';
+        this.paymentProcessing = false;
+        this.addresses = JSON.parse(localStorage.getItem('addresses')) || [];
+        this.init();
+      }
+
+      init() {
+        this.displayCart();
+        this.updateSummary();
+        this.setupPrescriptionSection();
+        this.setupPaymentTabs();
+        this.setupCryptoPayment();
+        this.setupCardValidation();
+        this.setupUPIValidation();
+        this.setupPaymentButtons();
+        this.displayAddresses();
+      }
+
+      setupPrescriptionSection() {
+        const prescriptionItems = this.cart.filter(item => item.prescription && !item.prescriptionVerified);
+        const section = document.getElementById('prescriptionSection');
+        
+        if (prescriptionItems.length === 0) {
+          section.style.display = 'none';
+          return;
+        }
+
+        const uploadsContainer = section.querySelector('.space-y-4');
+        uploadsContainer.innerHTML = prescriptionItems.map(item => `
+          <div class="prescription-upload p-4 border rounded-xl">
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="font-medium">${item.name}</h4>
+              <span class="text-yellow-600 text-sm">Prescription Required</span>
+            </div>
+            <div class="flex items-center gap-4">
+              <a href="prescription-verify.html?medicine=${encodeURIComponent(item.name)}" 
+                 class="flex-grow text-center py-2 px-4 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-all">
+                Verify Prescription
+              </a>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      setupPaymentTabs() {
+        const tabs = document.querySelectorAll('.payment-tab');
+        tabs.forEach(tab => {
+          tab.addEventListener('click', () => {
+            const tabId = tab.getAttribute('data-tab');
+            this.selectedPaymentMethod = tabId;
+            this.updatePaymentContent();
+          });
+        });
+      }
+
+      setupCryptoPayment() {
+        const cryptoTab = document.querySelector('.payment-tab[data-tab="crypto"]');
+        if (cryptoTab) {
+          cryptoTab.addEventListener('click', () => {
+            this.selectedPaymentMethod = 'crypto';
+            this.updatePaymentContent();
+          });
+        }
+      }
+
+      setupCardValidation() {
+        const cardInputs = document.querySelectorAll('#cardPayment input');
+        cardInputs.forEach(input => {
+          input.addEventListener('input', (e) => {
+            switch(e.target.placeholder) {
+              case '1234 5678 9012 3456':
+                this.formatCardNumber(e.target);
+                break;
+              case 'MM/YY':
+                this.formatExpiry(e.target);
+                break;
+              case '123':
+                this.formatCVV(e.target);
+                break;
+            }
+          });
+        });
+      }
+
+      formatCardNumber(input) {
+        let value = input.value.replace(/\D/g, '');
+        let formattedValue = '';
+        for (let i = 0; i < value.length; i++) {
+          if (i > 0 && i % 4 === 0) {
+            formattedValue += ' ';
+          }
+          formattedValue += value[i];
+        }
+        input.value = formattedValue;
+      }
+
+      formatExpiry(input) {
+        let value = input.value.replace(/\D/g, '');
+        if (value.length >= 2) {
+          value = value.slice(0, 2) + '/' + value.slice(2);
+        }
+        input.value = value;
+      }
+
+      formatCVV(input) {
+        input.value = input.value.replace(/\D/g, '').slice(0, 3);
+      }
+
+      setupUPIValidation() {
+        const upiInput = document.querySelector('#upiPayment input[placeholder*="UPI ID"]');
+        if (upiInput) {
+          upiInput.addEventListener('input', (e) => {
+            const value = e.target.value;
+            const upiRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z]{3,}$/;
+            const isValid = upiRegex.test(value);
+            
+            if (value && !isValid) {
+              e.target.classList.add('border-red-500');
+              e.target.setCustomValidity('Please enter a valid UPI ID');
+            } else {
+              e.target.classList.remove('border-red-500');
+              e.target.setCustomValidity('');
+            }
+          });
+        }
+
+        // Setup UPI app selection
+        const upiMethods = document.querySelectorAll('.upi-method');
+        upiMethods.forEach(method => {
+          method.addEventListener('click', () => {
+            const app = method.getAttribute('data-app');
+            if (app === 'other') {
+              this.showOtherUPIApps();
+              return;
+            }
+
+            upiMethods.forEach(m => m.classList.remove('selected'));
+            method.classList.add('selected');
+            this.selectedUPIApp = app;
+          });
+        });
+      }
+
+      showOtherUPIApps() {
+        const popup = document.createElement('div');
+        popup.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        popup.innerHTML = `
+          <div class="bg-white rounded-2xl max-w-md w-full p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h3 class="text-xl font-semibold">Other UPI Apps</h3>
+              <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+              <div class="upi-method" data-app="icici">
+                <img src="assets/icici.png" alt="ICICI iMobile">
+                <span>ICICI iMobile</span>
+              </div>
+              <div class="upi-method" data-app="hdfc">
+                <img src="assets/hdfc.png" alt="HDFC Bank">
+                <span>HDFC Bank</span>
+              </div>
+              <div class="upi-method" data-app="sbi">
+                <img src="assets/sbi.png" alt="SBI Yono">
+                <span>SBI Yono</span>
+              </div>
+              <div class="upi-method" data-app="axis">
+                <img src="assets/axis.png" alt="Axis Mobile">
+                <span>Axis Mobile</span>
+              </div>
+              <div class="upi-method" data-app="kotak">
+                <img src="assets/kotak.png" alt="Kotak 811">
+                <span>Kotak 811</span>
+              </div>
+              <div class="upi-method" data-app="pnb">
+                <img src="assets/pnb.png" alt="PNB">
+                <span>PNB</span>
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.body.appendChild(popup);
+
+        // Add click handlers for other UPI apps
+        const otherUpiMethods = popup.querySelectorAll('.upi-method');
+        otherUpiMethods.forEach(method => {
+          method.addEventListener('click', () => {
+            const app = method.getAttribute('data-app');
+            this.selectedUPIApp = app;
+            popup.remove();
+            this.showToast(`Selected ${app.toUpperCase()} for payment`);
+          });
+        });
+      }
+
+      setupPaymentButtons() {
+        const checkoutButton = document.querySelector('.checkout-btn');
+        if (checkoutButton) {
+          checkoutButton.addEventListener('click', () => {
+            if (this.currentStep === 3) {
+              this.processPayment();
+            } else {
+              this.proceedToNextStep();
+            }
+          });
+        }
+      }
+
+      proceedToNextStep() {
+        // Check if prescriptions are uploaded
+        if (this.currentStep === 1) {
+          const prescriptionItems = this.cart.filter(item => item.prescription && !item.prescriptionVerified);
+          if (prescriptionItems.length > 0) {
+            const uploads = document.querySelectorAll('.prescription-upload a');
+            let allVerified = true;
+            uploads.forEach(upload => {
+              if (!upload.href) {
+                allVerified = false;
+              }
+            });
+            if (!allVerified) {
+              this.showToast('Please verify all required prescriptions', 'error');
+              return;
+            }
+          }
+        }
+
+        this.currentStep++;
+        this.updateCheckoutStep();
+      }
+
+      updateCheckoutStep() {
+        const steps = document.querySelectorAll('.checkout-step');
+        steps.forEach((step, index) => {
+          if (index + 1 === this.currentStep) {
+            step.classList.add('active');
+          }
+        });
+
+        const addressSection = document.getElementById('addressSection');
+        const paymentSection = document.getElementById('paymentSection');
+        const button = document.getElementById('checkoutButtonText');
+
+        switch (this.currentStep) {
+          case 2:
+            addressSection.classList.remove('hidden');
+            button.textContent = 'Proceed to Payment';
+            break;
+          case 3:
+            paymentSection.classList.remove('hidden');
+            button.textContent = 'Place Order';
+            break;
+        }
+      }
+
+      showAddAddressForm() {
+        const popup = document.createElement('div');
+        popup.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        popup.innerHTML = `
+          <div class="bg-white rounded-2xl max-w-md w-full p-6">
+            <h3 class="text-xl font-semibold mb-6">Add New Address</h3>
+            <form id="addressForm" class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium mb-1">Full Name</label>
+                <input type="text" name="fullName" required class="w-full p-2 border rounded-lg">
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">Mobile Number</label>
+                <input type="tel" name="mobile" required pattern="[0-9]{10}" class="w-full p-2 border rounded-lg">
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">Address Line 1</label>
+                <input type="text" name="addressLine1" required class="w-full p-2 border rounded-lg">
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">Address Line 2</label>
+                <input type="text" name="addressLine2" class="w-full p-2 border rounded-lg">
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium mb-1">City</label>
+                  <input type="text" name="city" required class="w-full p-2 border rounded-lg">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-1">Pincode</label>
+                  <input type="text" name="pincode" required pattern="[0-9]{6}" class="w-full p-2 border rounded-lg">
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">State</label>
+                <select name="state" required class="w-full p-2 border rounded-lg">
+                  <option value="">Select State</option>
+                  <option value="Maharashtra">Maharashtra</option>
+                  <option value="Delhi">Delhi</option>
+                  <option value="Karnataka">Karnataka</option>
+                  <option value="Tamil Nadu">Tamil Nadu</option>
+                  <option value="Kerala">Kerala</option>
+                  <option value="Gujarat">Gujarat</option>
+                  <option value="West Bengal">West Bengal</option>
+                </select>
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="checkbox" id="defaultAddress" name="isDefault">
+                <label for="defaultAddress" class="text-sm">Make this my default address</label>
+              </div>
+              <div class="flex justify-end gap-4 mt-6">
+                <button type="button" 
+                        onclick="this.closest('.fixed').remove()"
+                        class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+                  Cancel
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600">
+                  Save Address
+                </button>
+              </div>
+            </form>
+          </div>
+        `;
+
+        document.body.appendChild(popup);
+
+        // Add form submission handler
+        const form = popup.querySelector('#addressForm');
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          this.saveAddress(new FormData(form));
+          popup.remove();
+        });
+      }
+
+      saveAddress(formData) {
+        const address = {
+          id: Date.now(), // Unique ID for the address
+          fullName: formData.get('fullName'),
+          mobile: formData.get('mobile'),
+          addressLine1: formData.get('addressLine1'),
+          addressLine2: formData.get('addressLine2'),
+          city: formData.get('city'),
+          pincode: formData.get('pincode'),
+          state: formData.get('state'),
+          isDefault: formData.get('isDefault') === 'on'
+        };
+
+        // If this is set as default, remove default from other addresses
+        if (address.isDefault) {
+          this.addresses.forEach(addr => addr.isDefault = false);
+        }
+
+        // If this is the first address, make it default
+        if (this.addresses.length === 0) {
+          address.isDefault = true;
+        }
+
+        this.addresses.push(address);
+        localStorage.setItem('addresses', JSON.stringify(this.addresses));
+        this.displayAddresses();
+        this.showToast('Address saved successfully');
+      }
+
+      displayAddresses() {
+        const addressList = document.getElementById('addressList');
+        if (!addressList) return;
+
+        if (this.addresses.length === 0) {
+          addressList.innerHTML = `
+            <div class="col-span-2 text-center py-8">
+              <i class="material-icons text-gray-400 text-4xl mb-2">location_off</i>
+              <p class="text-gray-500">No addresses saved yet</p>
+            </div>
+          `;
+          return;
+        }
+
+        addressList.innerHTML = this.addresses.map(address => `
+          <div class="address-card p-4 border rounded-xl cursor-pointer ${address.isDefault ? 'selected' : ''}"
+               onclick="cartManager.selectAddress(${address.id})">
+            <div class="flex justify-between items-start mb-2">
+              <h4 class="font-medium">${address.fullName}</h4>
+              ${address.isDefault ? '<span class="text-xs bg-teal-100 text-teal-600 px-2 py-1 rounded">Default</span>' : ''}
+            </div>
+            <p class="text-sm text-gray-600 mb-1">${address.mobile}</p>
+            <p class="text-sm text-gray-600 mb-1">${address.addressLine1}</p>
+            ${address.addressLine2 ? `<p class="text-sm text-gray-600 mb-1">${address.addressLine2}</p>` : ''}
+            <p class="text-sm text-gray-600">${address.city}, ${address.state} - ${address.pincode}</p>
+            <div class="flex justify-end mt-4 gap-2">
+              <button onclick="event.stopPropagation(); cartManager.deleteAddress(${address.id})"
+                      class="text-red-500 hover:text-red-600 text-sm">
+                <i class="material-icons text-sm">delete</i>
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      selectAddress(addressId) {
+        this.addresses.forEach(address => {
+          address.isDefault = address.id === addressId;
+        });
+        localStorage.setItem('addresses', JSON.stringify(this.addresses));
+        this.displayAddresses();
+        this.showToast('Delivery address selected');
+      }
+
+      deleteAddress(addressId) {
+        if (confirm('Are you sure you want to delete this address?')) {
+          const index = this.addresses.findIndex(addr => addr.id === addressId);
+          if (index !== -1) {
+            const wasDefault = this.addresses[index].isDefault;
+            this.addresses.splice(index, 1);
+            
+            // If we deleted the default address and there are other addresses, make the first one default
+            if (wasDefault && this.addresses.length > 0) {
+              this.addresses[0].isDefault = true;
+            }
+            
+            localStorage.setItem('addresses', JSON.stringify(this.addresses));
+            this.displayAddresses();
+            this.showToast('Address deleted successfully');
+          }
+        }
+      }
+
+      displayCart() {
+        const container = document.getElementById('cartItemsContainer');
+        if (this.cart.length === 0) {
+          container.innerHTML = `
+            <div class="text-center py-12">
+              <i class="material-icons text-gray-400 text-6xl mb-4">shopping_cart</i>
+              <h3 class="text-xl font-semibold text-gray-700 mb-2">Your cart is empty</h3>
+              <p class="text-gray-500 mb-6">Add some medicines to your cart</p>
+              <a href="medicines.html" 
+                 class="inline-flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium">
+                <i class="material-icons text-sm">arrow_back</i>
+                Browse Medicines
+              </a>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = this.cart.map((item, index) => `
+          <div class="cart-item flex items-center gap-6 py-6 ${index !== 0 ? 'border-t border-gray-100' : ''}">
+            <div class="w-16 h-16 bg-gradient-to-br from-teal-50 to-green-50 rounded-lg flex items-center justify-center">
+              <i class="${item.icon || 'fas fa-pills'} medicine-icon text-2xl text-teal-500"></i>
+            </div>
+            
+            <div class="flex-grow">
+              <h3 class="text-lg font-semibold text-gray-800">${item.name}</h3>
+              <div class="flex items-center gap-2 mt-1">
+                ${item.prescription ? `
+                  <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+                    Prescription Required
+                  </span>
+                ` : ''}
+                ${item.prescriptionVerified ? `
+                  <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                    Prescription Verified
+                  </span>
+                ` : ''}
+              </div>
+            </div>
+
+            <div class="flex items-center gap-6">
+              <div class="flex items-center bg-gray-100 rounded-lg">
+                <button onclick="cartManager.updateQuantity(${index}, -1)" 
+                        class="quantity-btn px-2 py-1 text-gray-600">
+                  <i class="material-icons text-sm">remove</i>
+                </button>
+                <span class="w-8 text-center">${item.quantity || 1}</span>
+                <button onclick="cartManager.updateQuantity(${index}, 1)" 
+                        class="quantity-btn px-2 py-1 text-gray-600">
+                  <i class="material-icons text-sm">add</i>
+                </button>
+              </div>
+
+              <div class="text-right">
+                <div class="text-lg font-semibold text-teal-600">₹${(item.priceValue * (item.quantity || 1)).toFixed(2)}</div>
+                <button onclick="cartManager.removeItem(${index})" 
+                        class="remove-btn text-gray-400 hover:text-red-500">
+                  <i class="material-icons">delete</i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        // Update prescription section visibility
+        this.setupPrescriptionSection();
+      }
+
+      updateQuantity(index, change) {
+        const item = this.cart[index];
+        item.quantity = (item.quantity || 1) + change;
+        if (item.quantity < 1) item.quantity = 1;
+        this.saveCart();
+        this.displayCart();
+        this.updateSummary();
+        this.showToast(`Updated ${item.name} quantity to ${item.quantity}`);
+      }
+
+      removeItem(index) {
+        const item = this.cart[index];
+        this.cart.splice(index, 1);
+        this.saveCart();
+        this.displayCart();
+        this.updateSummary();
+        this.showToast(`Removed ${item.name} from cart`);
+      }
+
+      updateSummary() {
+        const subtotal = this.cart.reduce((sum, item) => 
+          sum + (item.priceValue * (item.quantity || 1)), 0);
+        const shipping = this.cart.length > 0 ? 5 : 0;
+        const tax = subtotal * 0.1; // 10% tax
+
+        document.getElementById('subtotal').textContent = `₹${subtotal.toFixed(2)}`;
+        document.getElementById('shipping').textContent = `₹${shipping.toFixed(2)}`;
+        document.getElementById('tax').textContent = `₹${tax.toFixed(2)}`;
+        document.getElementById('total').textContent = 
+          `₹${(subtotal + shipping + tax).toFixed(2)}`;
+      }
+
+      saveCart() {
+        localStorage.setItem('cartItems', JSON.stringify(this.cart));
+      }
+
+      showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `fixed bottom-6 right-6 bg-${type}-500 text-white px-6 py-3 rounded-lg shadow-lg transition-all transform translate-y-0 opacity-100`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+          toast.style.transform = 'translateY(20px)';
+          toast.style.opacity = '0';
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+
+      async processPayment() {
+        if (this.paymentProcessing) return;
+        this.paymentProcessing = true;
+
+        try {
+          switch(this.selectedPaymentMethod) {
+            case 'card':
+              await this.processCardPayment();
+              break;
+            case 'upi':
+              await this.processUPIPayment();
+              break;
+            case 'crypto':
+              await this.processCryptoPayment();
+              break;
+          }
+        } catch (error) {
+          this.showToast(error.message, 'error');
+        } finally {
+          this.paymentProcessing = false;
+        }
+      }
+
+      async processCardPayment() {
+        const cardDetails = {
+          number: document.querySelector('#cardPayment input[placeholder*="Card Number"]').value.replace(/\s/g, ''),
+          name: document.querySelector('#cardPayment input[placeholder*="Cardholder Name"]').value,
+          expiry: document.querySelector('#cardPayment input[placeholder*="MM/YY"]').value,
+          cvv: document.querySelector('#cardPayment input[placeholder*="CVV"]').value
+        };
+
+        // Validate card details
+        if (!this.validateCardDetails(cardDetails)) {
+          throw new Error('Please check your card details');
+        }
+
+        // Show processing state
+        this.showPaymentProcessing('Processing card payment...');
+
+        try {
+          // Simulate API call to payment gateway
+          await new Promise(resolve => setTimeout(resolve, 2000));
+
+          // Simulate successful payment
+          this.showPaymentSuccess();
+          this.clearCart();
+          window.location.href = 'order-confirmation.html';
+        } catch (error) {
+          throw new Error('Card payment failed. Please try again.');
+        }
+      }
+
+      async processUPIPayment() {
+        const upiId = document.querySelector('#upiPayment input[placeholder*="UPI ID"]').value;
+        const selectedApp = this.selectedUPIApp;
+
+        if (!upiId) {
+          throw new Error('Please enter UPI ID');
+        }
+
+        if (!selectedApp) {
+          throw new Error('Please select a UPI app');
+        }
+
+        // Show processing state
+        const statusElement = document.getElementById('upiPaymentStatus');
+        statusElement.className = 'upi-payment-status active pending';
+        
+        // Start countdown timer
+        let timeLeft = 300; // 5 minutes
+        const timerElement = document.getElementById('upiTimer');
+        const timer = setInterval(() => {
+          const minutes = Math.floor(timeLeft / 60);
+          const seconds = timeLeft % 60;
+          timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+          
+          if (timeLeft <= 0) {
+            clearInterval(timer);
+            this.handleUPIPaymentTimeout();
+          }
+          timeLeft--;
+        }, 1000);
+
+        try {
+          // Simulate UPI payment initiation
+          await new Promise(resolve => setTimeout(resolve, 1000));
+
+          // Show UPI payment instructions
+          this.showUPIInstructions(selectedApp);
+
+          // Simulate payment confirmation
+          await new Promise(resolve => setTimeout(resolve, 3000));
+
+          clearInterval(timer);
+          statusElement.className = 'upi-payment-status active success';
+          statusElement.innerHTML = `
+            <div class="flex items-center gap-3">
+              <i class="fas fa-check-circle"></i>
+              <div>
+                <p class="font-medium">Payment Successful!</p>
+                <p class="text-sm mt-1">Your order has been confirmed</p>
+              </div>
+            </div>
+          `;
+
+          this.showPaymentSuccess();
+          this.clearCart();
+          window.location.href = 'order-confirmation.html';
+        } catch (error) {
+          clearInterval(timer);
+          this.handleUPIPaymentError(error);
+        }
+      }
+
+      handleUPIPaymentTimeout() {
+        const statusElement = document.getElementById('upiPaymentStatus');
+        statusElement.className = 'upi-payment-status active error';
+        statusElement.innerHTML = `
+          <div class="flex items-center gap-3">
+            <i class="fas fa-exclamation-circle"></i>
+            <div>
+              <p class="font-medium">Payment Timeout</p>
+              <p class="text-sm mt-1">Please try the payment again</p>
+            </div>
+          </div>
+        `;
+        this.showToast('Payment timeout. Please try again.', 'error');
+      }
+
+      handleUPIPaymentError(error) {
+        const statusElement = document.getElementById('upiPaymentStatus');
+        statusElement.className = 'upi-payment-status active error';
+        statusElement.innerHTML = `
+          <div class="flex items-center gap-3">
+            <i class="fas fa-exclamation-circle"></i>
+            <div>
+              <p class="font-medium">Payment Failed</p>
+              <p class="text-sm mt-1">${error.message}</p>
+            </div>
+          </div>
+        `;
+        this.showToast('Payment failed. Please try again.', 'error');
+      }
+
+      showUPIInstructions(app) {
+        const instructions = {
+          'gpay': 'Open Google Pay and approve the payment',
+          'phonepe': 'Open PhonePe and complete the payment',
+          'paytm': 'Open Paytm and confirm the payment',
+          'amazonpay': 'Open Amazon Pay and approve the payment',
+          'bhim': 'Open BHIM app and complete the payment',
+          'whatsapp': 'Open WhatsApp and complete the payment',
+          'airtel': 'Open Airtel Thanks app and approve the payment',
+          'icici': 'Open ICICI iMobile and complete the payment',
+          'hdfc': 'Open HDFC Bank app and approve the payment',
+          'sbi': 'Open SBI Yono and complete the payment',
+          'axis': 'Open Axis Mobile and approve the payment',
+          'kotak': 'Open Kotak 811 and complete the payment',
+          'pnb': 'Open PNB app and approve the payment'
+        };
+
+        this.showToast(`Please ${instructions[app.toLowerCase()] || 'complete the payment in your UPI app'}`, 'info');
+      }
+
+      showPaymentProcessing(message) {
+        const toast = document.createElement('div');
+        toast.className = 'fixed bottom-6 right-6 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2';
+        toast.innerHTML = `
+          <i class="fas fa-spinner fa-spin"></i>
+          <span>${message}</span>
+        `;
+        document.body.appendChild(toast);
+        return toast;
+      }
+
+      showPaymentSuccess() {
+        const toast = document.createElement('div');
+        toast.className = 'fixed bottom-6 right-6 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2';
+        toast.innerHTML = `
+          <i class="fas fa-check-circle"></i>
+          <span>Payment successful!</span>
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+      }
+
+      validateCardDetails(details) {
+        // Card number validation (Luhn algorithm)
+        const cardNumber = details.number.replace(/\s/g, '');
+        if (!this.luhnCheck(cardNumber)) {
+          throw new Error('Invalid card number');
+        }
+
+        // Expiry validation
+        const [month, year] = details.expiry.split('/');
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear() % 100;
+        const currentMonth = currentDate.getMonth() + 1;
+
+        if (parseInt(month) < 1 || parseInt(month) > 12) {
+          throw new Error('Invalid expiry month');
+        }
+
+        if (parseInt(year) < currentYear || 
+            (parseInt(year) === currentYear && parseInt(month) < currentMonth)) {
+          throw new Error('Card has expired');
+        }
+
+        // CVV validation
+        if (!/^\d{3,4}$/.test(details.cvv)) {
+          throw new Error('Invalid CVV');
+        }
+
+        return true;
+      }
+
+      luhnCheck(cardNumber) {
+        let sum = 0;
+        let isEven = false;
+
+        for (let i = cardNumber.length - 1; i >= 0; i--) {
+          let digit = parseInt(cardNumber[i]);
+
+          if (isEven) {
+            digit *= 2;
+            if (digit > 9) {
+              digit -= 9;
+            }
+          }
+
+          sum += digit;
+          isEven = !isEven;
+        }
+
+        return sum % 10 === 0;
+      }
+
+      clearCart() {
+        this.cart = [];
+        this.saveCart();
+        this.displayCart();
+        this.updateSummary();
+      }
+    }
+
+    // Initialize cart manager
+    const cartManager = new CartManager();
+  </script>
+</body>
+</html> 

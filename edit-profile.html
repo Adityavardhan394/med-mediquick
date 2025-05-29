@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediQuick - Edit Profile</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00b386;
+            --primary-dark: #009973;
+            --primary-light: rgba(0, 179, 134, 0.1);
+            --accent: #FF6B6B;
+            --background: #f0f9f6;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --text: #2d3436;
+            --text-light: #636e72;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+            background: linear-gradient(135deg, #e0f5ed 0%, #b8e6d9 100%);
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(0, 179, 134, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(0, 179, 134, 0.1) 0%, transparent 40%);
+            animation: gradientMove 20s ease infinite;
+            z-index: -1;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0, 179, 134, 0.1);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .back-button {
+            position: absolute;
+            left: -60px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--card-bg);
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 179, 134, 0.1);
+            color: var(--primary);
+        }
+
+        .back-button:hover {
+            transform: translateY(-50%) scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 179, 134, 0.15);
+            background: var(--primary-light);
+        }
+
+        .edit-form {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 30px rgba(0, 179, 134, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+            color: var(--text);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px var(--primary-light);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .save-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .save-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 179, 134, 0.2);
+        }
+
+        .save-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .save-indicator.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .back-button {
+                position: static;
+                margin-bottom: 20px;
+                transform: none;
+            }
+
+            .back-button:hover {
+                transform: scale(1.05);
+            }
+
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <button class="back-button" onclick="window.location.href='profile.html'">
+                <i class="material-icons">arrow_back</i>
+            </button>
+            <h1>Edit Profile</h1>
+            <div></div>
+        </div>
+
+        <!-- Edit Form -->
+        <form class="edit-form" onsubmit="handleSubmit(event)">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="firstName">First Name</label>
+                    <input type="text" id="firstName" class="form-input" placeholder="Enter your first name">
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Last Name</label>
+                    <input type="text" id="lastName" class="form-input" placeholder="Enter your last name">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" class="form-input" placeholder="Enter your email">
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" class="form-input" placeholder="Enter your phone number">
+            </div>
+
+            <div class="form-group">
+                <label for="dob">Date of Birth</label>
+                <input type="date" id="dob" class="form-input">
+            </div>
+
+            <div class="form-group">
+                <label for="address">Address</label>
+                <textarea id="address" class="form-input" rows="3" placeholder="Enter your address"></textarea>
+            </div>
+
+            <button type="submit" class="save-button">
+                <i class="material-icons">save</i>
+                Save Changes
+            </button>
+        </form>
+    </div>
+
+    <!-- Save Indicator -->
+    <div id="saveIndicator" class="save-indicator">
+        <i class="material-icons spinner">autorenew</i>
+        <span>Saving changes...</span>
+    </div>
+
+    <script>
+        // Load existing profile data
+        document.addEventListener('DOMContentLoaded', function() {
+            const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+            if (profileData.personalInfo) {
+                document.getElementById('firstName').value = profileData.personalInfo.firstName || '';
+                document.getElementById('lastName').value = profileData.personalInfo.lastName || '';
+                document.getElementById('email').value = profileData.personalInfo.email || '';
+                document.getElementById('phone').value = profileData.personalInfo.phone || '';
+                document.getElementById('dob').value = profileData.personalInfo.dob || '';
+                document.getElementById('address').value = profileData.personalInfo.address || '';
+            }
+        });
+
+        // Handle form submission
+        function handleSubmit(event) {
+            event.preventDefault();
+            
+            // Show saving indicator
+            const indicator = document.getElementById('saveIndicator');
+            indicator.classList.add('show');
+
+            // Get form data
+            const formData = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                dob: document.getElementById('dob').value,
+                address: document.getElementById('address').value
+            };
+
+            // Simulate API call
+            setTimeout(() => {
+                // Get existing profile data
+                const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                
+                // Update personal info
+                profileData.personalInfo = {
+                    ...profileData.personalInfo,
+                    ...formData
+                };
+
+                // Save to localStorage
+                localStorage.setItem('profileData', JSON.stringify(profileData));
+
+                // Update save indicator
+                indicator.innerHTML = `
+                    <i class="material-icons">check_circle</i>
+                    <span>Changes saved successfully!</span>
+                `;
+
+                // Hide indicator after 2 seconds
+                setTimeout(() => {
+                    indicator.classList.remove('show');
+                    // Redirect back to profile page
+                    window.location.href = 'profile.html';
+                }, 2000);
+            }, 1500);
+        }
+    </script>
+</body>
+</html> 
