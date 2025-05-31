@@ -1,0 +1,12 @@
+default_platform(:android)
+
+platform :android do
+  desc "Submit a new Internal Testing Build to Play Store"
+  lane :internal do
+    gradle(task: "clean assembleRelease")
+    upload_to_play_store(
+      track: 'internal',
+      aab: '../app/build/outputs/bundle/release/app-release.aab'
+    )
+  end
+end 
