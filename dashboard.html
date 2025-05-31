@@ -1768,46 +1768,375 @@
             toggleBtn.onclick = () => chatContainer.style.display = 'flex';
             closeBtn.onclick = () => chatContainer.style.display = 'none';
 
-            // Send message
+            // Advanced AI Response System
+            class MediQuickAI {
+                constructor() {
+                    this.knowledgeBase = {
+                        // App Features
+                        features: {
+                            keywords: ['feature', 'what can', 'what does', 'capabilities', 'functions', 'services'],
+                            responses: [
+                                "MediQuick offers: 🏥 Medicine ordering, 📦 Real-time order tracking, 💳 Multiple payment options, 👨‍⚕️ Teleconsultation, 🚨 Emergency SOS, 📊 Health insights, and 👤 Profile management.",
+                                "Our main features include ordering medicines, tracking deliveries with GPS, video consultations with doctors, emergency services, and personalized health recommendations!"
+                            ]
+                        },
+
+                        // Medicine Ordering
+                        medicines: {
+                            keywords: ['order medicine', 'buy medicine', 'purchase', 'pharmacy', 'drugs', 'medication', 'pills', 'tablets'],
+                            responses: [
+                                "To order medicines: 1️⃣ Click 'Medicines' tile, 2️⃣ Browse categories or search, 3️⃣ Add to cart, 4️⃣ Proceed to checkout, 5️⃣ Add delivery address, 6️⃣ Choose payment method. Easy! 💊",
+                                "You can order medicines by going to the Medicines section, searching for your medication, and adding it to cart. We have 32+ categories including OTC medicines, personal care, and health devices! 🏥"
+                            ]
+                        },
+
+                        // Order Tracking
+                        tracking: {
+                            keywords: ['track order', 'delivery', 'shipping', 'where is my order', 'order status', 'gps tracking'],
+                            responses: [
+                                "Track your orders in real-time! 📍 Go to 'Order Tracking' tile or 'Orders' in navigation. You'll see live GPS tracking, delivery agent info, and estimated arrival time. Cool, right? 🚚",
+                                "Real-time tracking available! Click the 'Orders' section to see your delivery on a live map, contact your delivery agent, and get precise ETA updates. 📱📍"
+                            ]
+                        },
+
+                        // Payment
+                        payment: {
+                            keywords: ['payment', 'pay', 'card', 'upi', 'gpay', 'phonepe', 'paytm', 'money', 'cost', 'price'],
+                            responses: [
+                                "We accept: 💳 Credit/Debit cards (Visa, Mastercard, RuPay), 📱 UPI payments (GPay, PhonePe, Paytm, Amazon Pay, BHIM, WhatsApp Pay). Choose what's convenient! 💸",
+                                "Payment is super easy! Use cards or any UPI app. We support all major payment methods with secure encryption. Plus, apply coupon codes like FIRST20, MEDI100, SAVE50! 🎫"
+                            ]
+                        },
+
+                        // Emergency Services
+                        emergency: {
+                            keywords: ['emergency', 'sos', 'urgent', 'immediate help', 'ambulance', 'doctor urgent'],
+                            responses: [
+                                "🚨 Emergency SOS is available 24/7! Click the red 'Emergency SOS' tile for immediate medical assistance. We'll connect you to nearest hospitals and emergency services instantly!",
+                                "For emergencies, use our SOS feature! It provides instant access to ambulances, emergency contacts, nearby hospitals, and urgent medication delivery. Stay safe! 🏥🚑"
+                            ]
+                        },
+
+                        // Profile Management
+                        profile: {
+                            keywords: ['profile', 'account', 'personal info', 'settings', 'preferences', 'avatar'],
+                            responses: [
+                                "Manage your profile easily! 👤 Go to 'My Profile' to update personal info, health records, prescriptions, addresses, and preferences. Keep your health data organized! 📋",
+                                "Your profile contains: Personal details, health insights, prescription history, saved addresses, payment methods, and app preferences. All in one place! ⚙️"
+                            ]
+                        },
+
+                        // Teleconsultation
+                        consultation: {
+                            keywords: ['doctor', 'consultation', 'video call', 'teleconsultation', 'appointment', 'medical advice'],
+                            responses: [
+                                "Book video consultations! 👨‍⚕️ Click 'Teleconsultation' tile to connect with certified doctors via video call. Get medical advice from home! 🏠💻",
+                                "Our teleconsultation service connects you with experienced doctors for video consultations. Perfect for follow-ups, prescriptions, and medical advice! 📹🩺"
+                            ]
+                        },
+
+                        // Navigation Help
+                        navigation: {
+                            keywords: ['how to navigate', 'where to find', 'how to go', 'navigation', 'menu', 'sections'],
+                            responses: [
+                                "Navigation is easy! 🧭 Use the top menu: Home (dashboard), Orders (tracking), Profile (your info), Settings (app preferences). Or click the colorful tiles below! 🎨",
+                                "Find everything quickly: Main tiles on dashboard for key features, top navigation for sections, search bar for medicines, and floating chat button (me!) for help! 😊"
+                            ]
+                        },
+
+                        // Health Insights
+                        health: {
+                            keywords: ['health insights', 'health data', 'medication adherence', 'wellness', 'recommendations'],
+                            responses: [
+                                "Health insights use AI to analyze your data! 📊 See medication adherence rates, health trends, smart recommendations, and wearable device integration. Your health, tracked! 💪",
+                                "We provide personalized health insights: medication reminders, wellness trends, smart supplement recommendations, and integration with Fitbit/Apple Health! 📈"
+                            ]
+                        },
+
+                        // Cart and Checkout
+                        cart: {
+                            keywords: ['cart', 'checkout', 'add address', 'delivery address', 'coupon', 'discount'],
+                            responses: [
+                                "Cart features: ➕ Add/remove items, 🏠 Manage delivery addresses, 🎫 Apply coupons (FIRST20, MEDI100, SAVE50), 💰 See price breakdown, and 🚚 Choose delivery options!",
+                                "Checkout is streamlined! Review cart → Add delivery address → Choose payment → Place order. Plus, get delivery fee (₹40), GST calculation, and discount applications! 🛒"
+                            ]
+                        },
+
+                        // App Benefits
+                        benefits: {
+                            keywords: ['why use', 'benefits', 'advantages', 'why mediquick', 'better than'],
+                            responses: [
+                                "MediQuick benefits: ⚡ Quick delivery, 🎯 Real-time tracking, 💊 Verified medicines, 👨‍⚕️ Expert consultations, 🚨 Emergency services, 🤖 AI health insights, 🔒 Secure payments!",
+                                "Choose MediQuick for: Fastest medicine delivery, GPS tracking, 24/7 support, genuine medications, expert teleconsultations, emergency assistance, and personalized health management! 🌟"
+                            ]
+                        },
+
+                        // Troubleshooting
+                        help: {
+                            keywords: ['help', 'problem', 'issue', 'not working', 'error', 'trouble', 'support'],
+                            responses: [
+                                "Need help? 🤝 I can assist with: ordering medicines, tracking orders, payment issues, profile setup, emergency services, or any app feature. Just ask specifically! 💬",
+                                "Having issues? Tell me more! I can help with technical problems, guide you through features, explain processes, or troubleshoot specific issues. What's bothering you? 🔧"
+                            ]
+                        },
+
+                        // Prescription
+                        prescription: {
+                            keywords: ['prescription', 'rx', 'doctor prescription', 'prescribed medicine'],
+                            responses: [
+                                "For prescription medicines: 📋 Upload your prescription during checkout, our pharmacists verify it, and we deliver verified medications. Safe and compliant! ✅",
+                                "Prescription process: Upload → Verification → Approval → Delivery. We ensure all prescription medicines are verified by certified pharmacists for your safety! 🔍"
+                            ]
+                        }
+                    };
+
+                    this.conversationContext = [];
+                    this.userPreferences = this.loadUserPreferences();
+                }
+
+                loadUserPreferences() {
+                    const savedData = localStorage.getItem('profileData');
+                    if (savedData) {
+                        const profileData = JSON.parse(savedData);
+                        return {
+                            name: profileData.personalInfo?.firstName || 'there',
+                            hasOrders: localStorage.getItem('cartItems') ? true : false,
+                            hasProfile: profileData.personalInfo?.firstName ? true : false
+                        };
+                    }
+                    return { name: 'there', hasOrders: false, hasProfile: false };
+                }
+
+                async processMessage(userMessage) {
+                    const message = userMessage.toLowerCase();
+                    this.conversationContext.push({ role: 'user', message: userMessage });
+
+                    // Check for greetings
+                    if (this.isGreeting(message)) {
+                        return this.getGreetingResponse();
+                    }
+
+                    // Check for thanks
+                    if (this.isThanking(message)) {
+                        return this.getThankingResponse();
+                    }
+
+                    // Check for specific app queries
+                    const response = this.findBestResponse(message);
+                    if (response) {
+                        this.conversationContext.push({ role: 'assistant', message: response });
+                        return response;
+                    }
+
+                    // Default response with suggestions
+                    return this.getDefaultResponse();
+                }
+
+                isGreeting(message) {
+                    const greetings = ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening'];
+                    return greetings.some(greeting => message.includes(greeting));
+                }
+
+                isThanking(message) {
+                    const thanks = ['thank', 'thanks', 'appreciate', 'helpful'];
+                    return thanks.some(thank => message.includes(thank));
+                }
+
+                getGreetingResponse() {
+                    const greetings = [
+                        `Hello ${this.userPreferences.name}! 👋 I'm your MediQuick Assistant. How can I help you today?`,
+                        `Hi there! 😊 Welcome to MediQuick. I can help you with ordering medicines, tracking orders, payments, and more!`,
+                        `Hey ${this.userPreferences.name}! 🤖 Need help with anything? I know everything about the MediQuick app!`
+                    ];
+                    return greetings[Math.floor(Math.random() * greetings.length)];
+                }
+
+                getThankingResponse() {
+                    const responses = [
+                        "You're welcome! 😊 I'm always here to help with your MediQuick needs!",
+                        "Happy to help! 🤗 Feel free to ask anything else about the app!",
+                        "Glad I could assist! 👍 Don't hesitate to reach out anytime!"
+                    ];
+                    return responses[Math.floor(Math.random() * responses.length)];
+                }
+
+                findBestResponse(message) {
+                    let bestMatch = null;
+                    let highestScore = 0;
+
+                    for (const [category, data] of Object.entries(this.knowledgeBase)) {
+                        const score = this.calculateRelevanceScore(message, data.keywords);
+                        if (score > highestScore && score > 0.3) {
+                            highestScore = score;
+                            bestMatch = data;
+                        }
+                    }
+
+                    if (bestMatch) {
+                        const response = bestMatch.responses[Math.floor(Math.random() * bestMatch.responses.length)];
+                        return this.personalizeResponse(response);
+                    }
+
+                    return null;
+                }
+
+                calculateRelevanceScore(message, keywords) {
+                    let score = 0;
+                    const words = message.split(' ');
+                    
+                    keywords.forEach(keyword => {
+                        if (message.includes(keyword)) {
+                            score += keyword.split(' ').length; // Multi-word keywords get higher scores
+                        }
+                    });
+
+                    return score / words.length;
+                }
+
+                personalizeResponse(response) {
+                    // Add personalization based on user data
+                    if (this.userPreferences.hasOrders && response.includes('order')) {
+                        response += " You can check your current orders in the tracking section! 📦";
+                    }
+                    
+                    if (!this.userPreferences.hasProfile && response.includes('profile')) {
+                        response += " Complete your profile for a better experience! 👤";
+                    }
+
+                    return response;
+                }
+
+                getDefaultResponse() {
+                    const suggestions = [
+                        "I can help you with:\n🏥 Ordering medicines\n📦 Tracking orders\n💳 Payments & coupons\n👨‍⚕️ Teleconsultation\n🚨 Emergency services\n👤 Profile management\n\nWhat would you like to know?",
+                        "Not sure what you're looking for? Try asking:\n• 'How do I order medicines?'\n• 'How to track my order?'\n• 'What payment methods do you accept?'\n• 'How does emergency SOS work?'\n\nI'm here to help! 😊",
+                        "I'm here to help with MediQuick! You can ask me about app features, ordering process, payments, tracking, consultations, or any other questions about the app. What's on your mind? 🤔"
+                    ];
+                    return suggestions[Math.floor(Math.random() * suggestions.length)];
+                }
+
+                // Advanced query handling
+                handleSpecificQueries(message) {
+                    // Handle complex queries
+                    if (message.includes('how much') || message.includes('cost') || message.includes('price')) {
+                        return "Medicine prices vary by product. You'll see exact prices in the cart with delivery fee (₹40), GST (18%), and any applicable discounts! Use coupon codes: FIRST20 (20% off), MEDI100 (₹100 off), SAVE50 (₹50 off)! 💰";
+                    }
+
+                    if (message.includes('delivery time') || message.includes('how long')) {
+                        return "Delivery times: 🚚 Standard: 2-4 hours, ⚡ Express: 30-60 minutes (select areas), 🚨 Emergency: 15-30 minutes. You get real-time GPS tracking for all orders! ⏰";
+                    }
+
+                    if (message.includes('safe') || message.includes('secure') || message.includes('trusted')) {
+                        return "Absolutely safe! 🔒 We use SSL encryption, verify all medicines, licensed pharmacists review prescriptions, secure payment gateways, and GPS tracking. Your health and data are our priority! ✅";
+                    }
+
+                    return null;
+                }
+            }
+
+            // Initialize AI
+            const mediQuickAI = new MediQuickAI();
+
+            // Send message function
             function sendMessage() {
                 const text = input.value.trim();
                 if (!text) return;
+                
                 appendMessage('user', text);
                 input.value = '';
                 chatBody.scrollTop = chatBody.scrollHeight;
-                // Show loading
-                appendMessage('bot', '<span class="ai-typing">...</span>', true);
-                // Call AI backend (replace with your real endpoint)
-                fetch('http://localhost:3001/api/ai', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: text })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    // Remove loading
-                    const loading = chatBody.querySelector('.ai-typing')?.parentElement;
-                    if (loading) loading.remove();
-                    appendMessage('bot', data.reply);
-                    chatBody.scrollTop = chatBody.scrollHeight;
-                })
-                .catch(() => {
-                    const loading = chatBody.querySelector('.ai-typing')?.parentElement;
-                    if (loading) loading.remove();
-                    appendMessage('bot', "Sorry, there was an error. Please try again.");
-                });
+                
+                // Show typing indicator
+                appendMessage('bot', '<div class="ai-typing">MediQuick AI is typing...</div>', true);
+                
+                // Process with AI (simulate slight delay for realism)
+                setTimeout(async () => {
+                    try {
+                        // Remove typing indicator
+                        const typingMsg = chatBody.querySelector('.ai-typing')?.parentElement?.parentElement;
+                        if (typingMsg) typingMsg.remove();
+                        
+                        // Get AI response
+                        const response = await mediQuickAI.processMessage(text);
+                        appendMessage('bot', response);
+                        chatBody.scrollTop = chatBody.scrollHeight;
+                        
+                        // Add quick action buttons for relevant responses
+                        if (response.includes('order') || response.includes('medicine')) {
+                            addQuickActionButtons(['🏥 Browse Medicines', '🛒 View Cart']);
+                        } else if (response.includes('track') || response.includes('delivery')) {
+                            addQuickActionButtons(['📦 Track Orders', '📍 Live Tracking']);
+                        } else if (response.includes('payment')) {
+                            addQuickActionButtons(['💳 Payment Methods', '🎫 Coupon Codes']);
+                        }
+                        
+                    } catch (error) {
+                        const typingMsg = chatBody.querySelector('.ai-typing')?.parentElement?.parentElement;
+                        if (typingMsg) typingMsg.remove();
+                        appendMessage('bot', "Sorry, there was an error. Please try again or ask another question about MediQuick!");
+                    }
+                }, 800 + Math.random() * 1000); // Random delay for natural feel
             }
 
-            function appendMessage(sender, text, isHtml) {
+            function appendMessage(sender, text, isHtml = false) {
                 const msg = document.createElement('div');
                 msg.className = 'ai-message ai-' + sender;
+                
+                const avatar = sender === 'bot' ? 'smart_toy' : 'person';
+                const content = isHtml ? text : escapeHtml(text).replace(/\n/g, '<br>');
+                
                 msg.innerHTML = `
-                    <div class="ai-avatar"><i class="material-icons">${sender === 'bot' ? 'smart_toy' : 'person'}</i></div>
-                    <div class="ai-bubble">${isHtml ? text : escapeHtml(text)}</div>
+                    <div class="ai-avatar"><i class="material-icons">${avatar}</i></div>
+                    <div class="ai-bubble">${content}</div>
                 `;
                 chatBody.appendChild(msg);
                 chatBody.scrollTop = chatBody.scrollHeight;
             }
+
+            function addQuickActionButtons(buttons) {
+                const quickActions = document.createElement('div');
+                quickActions.className = 'ai-message ai-bot';
+                quickActions.innerHTML = `
+                    <div class="ai-avatar"><i class="material-icons">smart_toy</i></div>
+                    <div class="ai-bubble">
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
+                            ${buttons.map(button => `
+                                <button onclick="handleQuickAction('${button}')" style="
+                                    background: linear-gradient(135deg, #00b386, #4a90e2);
+                                    color: white;
+                                    border: none;
+                                    padding: 6px 12px;
+                                    border-radius: 12px;
+                                    font-size: 12px;
+                                    cursor: pointer;
+                                    transition: transform 0.2s;
+                                " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                    ${button}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                chatBody.appendChild(quickActions);
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+
+            // Quick action handler
+            window.handleQuickAction = function(action) {
+                if (action.includes('Browse Medicines')) {
+                    window.location.href = 'medicines.html';
+                } else if (action.includes('View Cart')) {
+                    window.location.href = 'cart.html';
+                } else if (action.includes('Track Orders')) {
+                    window.location.href = 'orders.html';
+                } else if (action.includes('Live Tracking')) {
+                    window.location.href = 'orders.html';
+                } else if (action.includes('Payment Methods')) {
+                    appendMessage('bot', "We accept: 💳 Credit/Debit cards, 📱 UPI (GPay, PhonePe, Paytm, Amazon Pay, BHIM, WhatsApp Pay). All payments are 100% secure! 🔒");
+                } else if (action.includes('Coupon Codes')) {
+                    appendMessage('bot', "Available coupons:\n🎫 FIRST20 - 20% off on first order\n🎫 MEDI100 - ₹100 off on orders above ₹500\n🎫 SAVE50 - ₹50 off on any order\n\nApply during checkout! 💰");
+                }
+            };
 
             function escapeHtml(text) {
                 return text.replace(/[&<>'"]/g, c => ({
@@ -1815,13 +2144,20 @@
                 }[c]));
             }
 
+            // Event listeners
             sendBtn.onclick = sendMessage;
             input.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') sendMessage();
             });
-        });
 
-        window.medicineDisplay = new MedicineDisplay();
+            // Add welcome message with user's name
+            setTimeout(() => {
+                const userData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                const name = userData.personalInfo?.firstName || 'there';
+                const welcomeMsg = `Welcome to MediQuick, ${name}! 🌟 I'm your AI assistant. I can help you with:\n\n🏥 Medicine ordering\n📦 Order tracking\n💳 Payments & coupons\n👨‍⚕️ Teleconsultation\n🚨 Emergency services\n👤 Profile management\n\nWhat would you like to know?`;
+                appendMessage('bot', welcomeMsg);
+            }, 1000);
+        });
     </script>
 </body>
 </html> 
